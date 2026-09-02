@@ -845,7 +845,7 @@ SOLDIERTYPE& SOLDIERTYPE::operator=(const OLDSOLDIERTYPE_101& src)
 		this->usUIMovementMode = src.usUIMovementMode;
 		this->bUIInterfaceLevel = src.bUIInterfaceLevel;
 
-		this->ubProfile = src.ubProfile;
+		this->ubProfile = static_cast<UINT16>(src.ubProfile); // src is the legacy OLDSOLDIERTYPE_101 on-disk format - its ubProfile field is intentionally left UINT8
 		this->ubQuoteRecord = src.ubQuoteRecord;
 		this->ubQuoteActionID = src.ubQuoteActionID;
 		this->ubBattleSoundID = src.ubBattleSoundID;
@@ -1311,8 +1311,14 @@ MERCPROFILESTRUCT& MERCPROFILESTRUCT::operator=(const OLD_MERCPROFILESTRUCT_101&
 		memcpy( &(this->SKIN), &(src.SKIN), sizeof(PaletteRepID) );	// 30
 		memcpy( &(this->HAIR), &(src.HAIR), sizeof(PaletteRepID) );	// 30
 
-		memcpy( &(this->bBuddy), &(src.bBuddy), 5 * sizeof (UINT8) );
-		memcpy( &(this->bHated), &(src.bHated), 5 * sizeof (UINT8) );
+		// Phase 6: src (OLD_MERCPROFILESTRUCT_101) deliberately keeps bBuddy[]/bHated[] as INT8[5] - a
+		// different, frozen legacy type than the now-widened live MERCPROFILESTRUCT, so this can no longer
+		// be a raw memcpy; convert element-by-element instead.
+		for ( int iBuddyLoop = 0; iBuddyLoop < 5; iBuddyLoop++ )
+		{
+			this->bBuddy[iBuddyLoop] = static_cast<int>(src.bBuddy[iBuddyLoop]);
+			this->bHated[iBuddyLoop] = static_cast<int>(src.bHated[iBuddyLoop]);
+		}
 		memcpy( &(this->usRoomRangeStart), &(src.ubRoomRangeStart), 2 * sizeof (UINT8) );
 		memcpy( &(this->bMercTownReputation), &(src.bMercTownReputation), 20 * sizeof (INT8) );
 		memcpy( &(this->usApproachFactor), &(src.usApproachFactor), 4 * sizeof (UINT16) );
@@ -1329,7 +1335,7 @@ MERCPROFILESTRUCT& MERCPROFILESTRUCT::operator=(const OLD_MERCPROFILESTRUCT_101&
 		memcpy( &(this->bHatedTime), &(src.bHatedTime), 5 * sizeof (INT8) );
 		memcpy( &(this->bHatedCount), &(src.bHatedCount), 5 * sizeof (INT8) );
 
-		this->bLearnToLike = src.bLearnToLike;
+		this->bLearnToLike = static_cast<int>(src.bLearnToLike);	// Phase 6: src.bLearnToLike stays UINT8 (legacy type); ProfileID has no implicit UINT8 constructor by design
 		this->uiAttnSound = src.uiAttnSound;
 		this->uiCurseSound = src.uiCurseSound;
 		this->uiDieSound = src.uiDieSound;
@@ -1344,7 +1350,7 @@ MERCPROFILESTRUCT& MERCPROFILESTRUCT::operator=(const OLD_MERCPROFILESTRUCT_101&
 		this->fRegresses = src.bEvolution == 2; // formerly, 2 == CharacterEvolution::DEVOLVES
 		this->ubMiscFlags = src.ubMiscFlags;
 		this->bSexist = src.bSexist;
-		this->bLearnToHate = src.bLearnToHate;
+		this->bLearnToHate = static_cast<int>(src.bLearnToHate);	// Phase 6: src.bLearnToHate stays UINT8 (legacy type); ProfileID has no implicit UINT8 constructor by design
 
 		// skills
 		this->bStealRate = src.bStealRate;
@@ -10678,7 +10684,7 @@ UINT8 SOLDIERTYPE::SoldierTakeDamage( INT8 bHeight, INT16 sLifeDeduct, INT16 sBr
 			gJa25SaveStruct.fMorrisToSayHurtPlayerQuoteNextTurn = FALSE;
 
 			//Remeber who Morris is saying the quote too
-			gJa25SaveStruct.ubPlayerMorrisHurt = NO_PROFILE;
+			gJa25SaveStruct.ubPlayerMorrisHurt = NO_PROFILE_U8;
 		}
 	}
 #endif
@@ -17305,7 +17311,7 @@ INT8 SOLDIERTYPE::GetTraitCTHModifier( UINT16 usItem, INT16 ubAimTime, UINT8 ubT
 		}
 
 		// Dauntless - penalty for not taking proper cover
-		if ( ubTargetProfile != NO_PROFILE )
+		if ( ubTargetProfile != NO_PROFILE_U8 )
 		{
 			if ( gMercProfiles[ubTargetProfile].bCharacterTrait == CHAR_TRAIT_DAUNTLESS )
 				modifier += 5;

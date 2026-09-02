@@ -1221,7 +1221,7 @@ void HourlyFactoryUpdate()
 
 	// substract money spent
 	if ( moneyspentonproduction )
-		AddTransactionToPlayersBook ( FACILITY_OPERATIONS, NO_PROFILE, GetWorldTotalMin(), -moneyspentonproduction );
+		AddTransactionToPlayersBook ( FACILITY_OPERATIONS, NO_PROFILE_U8, GetWorldTotalMin(), -moneyspentonproduction );
 }
 
 #ifdef JA2UB

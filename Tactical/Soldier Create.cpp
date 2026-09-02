@@ -164,7 +164,7 @@ OLD_SOLDIERCREATE_STRUCT_101& OLD_SOLDIERCREATE_STRUCT_101::operator=(SOLDIERCRE
 		this->sSectorX = src.sSectorX;
 		this->sSectorY = src.sSectorY;
 		this->ubCivilianGroup = src.ubCivilianGroup;
-		this->ubProfile = src.ubProfile;
+		this->ubProfile = static_cast<UINT8>(src.ubProfile); // downgrading to the pre-8.x format: profiles above 254 cannot be represented here, by design
 		this->ubScheduleID = src.ubScheduleID;
 		this->ubSoldierClass = src.ubSoldierClass;
 	}
@@ -237,7 +237,7 @@ SOLDIERCREATE_STRUCT& SOLDIERCREATE_STRUCT::operator=(const OLD_SOLDIERCREATE_ST
 		this->sSectorX = src.sSectorX;
 		this->sSectorY = src.sSectorY;
 		this->ubCivilianGroup = src.ubCivilianGroup;
-		this->ubProfile = src.ubProfile;
+		this->ubProfile = static_cast<int>(src.ubProfile); // src is OLD_SOLDIERCREATE_STRUCT_101, ubProfile intentionally left UINT8
 		this->ubScheduleID = src.ubScheduleID;
 		this->ubSoldierClass = src.ubSoldierClass;
 	}
@@ -250,7 +250,7 @@ SOLDIERCREATE_STRUCT& SOLDIERCREATE_STRUCT::operator=(const SOLDIERTYPE& Soldier
 	//WARNING, this may not copy all data you expect over, I'm not sure
 	//but it does copy all the data from the previous function
 	//Copy over the data of the soldier.
-	this->ubProfile							= NO_PROFILE;
+	this->ubProfile							= NO_PROFILE_U8;
 	this->bLife									= Soldier.stats.bLife;
 	this->bLifeMax							= Soldier.stats.bLifeMax;
 	this->bAgility							= Soldier.stats.bAgility;
@@ -398,9 +398,67 @@ SOLDIERCREATE_STRUCT& SOLDIERCREATE_STRUCT::operator=(const _OLD_SOLDIERCREATE_S
 		sSectorX = src.sSectorX;
 		sSectorY = src.sSectorY;
 		ubCivilianGroup = src.ubCivilianGroup;
-		ubProfile = src.ubProfile;
+		ubProfile = static_cast<int>(src.ubProfile);
 		ubScheduleID = src.ubScheduleID;
 		ubSoldierClass = src.ubSoldierClass;
+	}
+	return(*this);
+}
+
+// Phase 5: converts from the frozen pre-2048-expansion (UINT8 ubProfile) on-disk shape.
+// Every field here is a straight copy - _OLD_SOLDIERCREATE_STRUCT_V8 is otherwise an exact
+// match of SOLDIERCREATE_STRUCT's layout as it stood before ubProfile widened to ProfileID.
+SOLDIERCREATE_STRUCT& SOLDIERCREATE_STRUCT::operator=(const _OLD_SOLDIERCREATE_STRUCT_V8& src)
+{
+	if((void*)this != (void*)&src)
+	{
+		fStatic = src.fStatic;
+		ubProfile = static_cast<int>(src.ubProfile);
+		fPlayerMerc = src.fPlayerMerc;
+		fPlayerPlan = src.fPlayerPlan;
+		fCopyProfileItemsOver = src.fCopyProfileItemsOver;
+		sSectorX = src.sSectorX;
+		sSectorY = src.sSectorY;
+		ubDirection = src.ubDirection;
+		sInsertionGridNo = src.sInsertionGridNo;
+		bTeam = src.bTeam;
+		ubBodyType = src.ubBodyType;
+		bAttitude = src.bAttitude;
+		bOrders = src.bOrders;
+		bLifeMax = src.bLifeMax;
+		bLife = src.bLife;
+		bAgility = src.bAgility;
+		bDexterity = src.bDexterity;
+		bExpLevel = src.bExpLevel;
+		bMarksmanship = src.bMarksmanship;
+		bMedical = src.bMedical;
+		bMechanical = src.bMechanical;
+		bExplosive = src.bExplosive;
+		bLeadership = src.bLeadership;
+		bStrength = src.bStrength;
+		bWisdom = src.bWisdom;
+		bMorale = src.bMorale;
+		bAIMorale = src.bAIMorale;
+		memcpy(&HeadPal, &src.HeadPal, sizeof(PaletteRepID));
+		memcpy(&PantsPal, &src.PantsPal, sizeof(PaletteRepID));
+		memcpy(&VestPal, &src.VestPal, sizeof(PaletteRepID));
+		memcpy(&SkinPal, &src.SkinPal, sizeof(PaletteRepID));
+		memcpy(&MiscPal, &src.MiscPal, sizeof(PaletteRepID));
+		memcpy(sPatrolGrid, src.sPatrolGrid, sizeof(sPatrolGrid));
+		bPatrolCnt = src.bPatrolCnt;
+		fVisible = src.fVisible;
+		memcpy(name, src.name, sizeof(CHAR16)*10);
+		ubSoldierClass = src.ubSoldierClass;
+		fOnRoof = src.fOnRoof;
+		bSectorZ = src.bSectorZ;
+		pExistingSoldier = src.pExistingSoldier;
+		fUseExistingSoldier = src.fUseExistingSoldier;
+		ubCivilianGroup = src.ubCivilianGroup;
+		fKillSlotIfOwnerDies = src.fKillSlotIfOwnerDies;
+		ubScheduleID = src.ubScheduleID;
+		fUseGivenVehicle = src.fUseGivenVehicle;
+		bUseGivenVehicleID = src.bUseGivenVehicleID;
+		fHasKeys = src.fHasKeys;
 	}
 	return(*this);
 }
@@ -1266,7 +1324,7 @@ SOLDIERTYPE* TacticalCreateSoldier( SOLDIERCREATE_STRUCT *pCreateStruct, Soldier
 
 BOOLEAN TacticalCopySoldierFromProfile( SOLDIERTYPE *pSoldier, SOLDIERCREATE_STRUCT *pCreateStruct )
 {
-	UINT8						ubProfileIndex;
+	ProfileID						ubProfileIndex; // Phase 5: was UINT8; SOLDIERCREATE_STRUCT::ubProfile is ProfileID now
 	MERCPROFILESTRUCT * pProfile;
 
 	ubProfileIndex = pCreateStruct->ubProfile;
@@ -2925,7 +2983,7 @@ void UpdateSoldierWithStaticDetailedInformation( SOLDIERTYPE *s, SOLDIERCREATE_S
 
 //In the case of setting a profile ID in order to extract a soldier from the profile array, we
 //also want to copy that information to the static detailed placement, for editor viewing purposes.
-void UpdateStaticDetailedPlacementWithProfileInformation( SOLDIERCREATE_STRUCT *spp, UINT8 ubProfile )
+void UpdateStaticDetailedPlacementWithProfileInformation( SOLDIERCREATE_STRUCT *spp, ProfileID ubProfile )
 {
 	UINT32					cnt;
 	MERCPROFILESTRUCT * pProfile;
@@ -3000,7 +3058,7 @@ void ModifySoldierAttributesWithNewRelativeLevel( SOLDIERTYPE *s, INT8 bRelative
 }
 
 
-void ForceSoldierProfileID( SOLDIERTYPE *pSoldier, UINT8 ubProfileID )
+void ForceSoldierProfileID( SOLDIERTYPE *pSoldier, ProfileID ubProfileID )
 {
 	SOLDIERCREATE_STRUCT CreateStruct;
 	CreateStruct.ubProfile = ubProfileID;
@@ -4092,7 +4150,7 @@ void RandomizeRelativeLevel( INT8 *pbRelLevel, UINT8 ubSoldierClass )
 
 
 //This function shouldn't be called outside of tactical
-void QuickCreateProfileMerc( INT8 bTeam, UINT8 ubProfileID )
+void QuickCreateProfileMerc( INT8 bTeam, ProfileID ubProfileID )
 {
 	// Create guy # X
 	SOLDIERCREATE_STRUCT MercCreateStruct;

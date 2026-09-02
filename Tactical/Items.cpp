@@ -1379,14 +1379,14 @@ BOOLEAN WeaponInHand( SOLDIERTYPE * pSoldier )
 			{
 				if (pSoldier->ubProfile != NO_PROFILE && pSoldier->ubProfile != MADLAB )
 				{
-					if (pSoldier->inv[HANDPOS][0]->data.ubImprintID != pSoldier->ubProfile)
+					if (static_cast<int>(pSoldier->inv[HANDPOS][0]->data.ubImprintID) != pSoldier->ubProfile) // TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed
 					{
 						return( FALSE );
 					}
 				}
 				else
 				{
-					if (pSoldier->inv[HANDPOS][0]->data.ubImprintID != (NO_PROFILE + 1) )
+					if (pSoldier->inv[HANDPOS][0]->data.ubImprintID != GENERIC_MERC_IMPRINT_ID )
 					{
 						return( FALSE );
 					}
@@ -8297,7 +8297,7 @@ BOOLEAN CreateGun( UINT16 usItem, INT16 bStatus, OBJECTTYPE * pObj )
 	//pObj->objectStack.resize(1);//not necessary due to init, here for code commenting
 	StackedObjectData* pStackedObject = (*pObj)[0];
 	pStackedObject->data.gun.bGunStatus = bStatus;
-	pStackedObject->data.ubImprintID = NO_PROFILE;
+	pStackedObject->data.ubImprintID = NO_PROFILE_U8;
 
 	// Flugente: temperature on creation is 0
 	pStackedObject->data.bTemperature = 0.0f;

@@ -1084,7 +1084,7 @@ void recieveHIRE(RPCParameters *rpcParameters)
 	SOLDIERCREATE_STRUCT		MercCreateStruct;
 	BOOLEAN fReturn = FALSE;
 	
-	MercCreateStruct.ubProfile						= sHireMerc->ubProfileID;
+	MercCreateStruct.ubProfile						= static_cast<int>(sHireMerc->ubProfileID); // send_hire_struct is a #pragma pack(1) network wire struct, ubProfileID intentionally left UINT8
 	MercCreateStruct.fPlayerMerc					= 0;
 	MercCreateStruct.sSectorX							= gsMercArriveSectorX;
 	MercCreateStruct.sSectorY							= gsMercArriveSectorY;

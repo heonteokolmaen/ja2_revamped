@@ -2713,7 +2713,7 @@ UINT32 DisplayInvSlot( UINT16 ubSlotNum, UINT16 usItemIndex, UINT16 usPosX, UINT
 		}
 
 		//if the item belongs to a merc
-		if( PlayersOfferArea[ ubSlotNum ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE )
+		if( PlayersOfferArea[ ubSlotNum ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 )
 		{
 			//Display the face of the merc
 			fDisplayMercFace = TRUE;
@@ -2750,7 +2750,7 @@ UINT32 DisplayInvSlot( UINT16 ubSlotNum, UINT16 usItemIndex, UINT16 usPosX, UINT
 			DrawTextToScreen( zTemp, (UINT16)(usPosX+SKI_INV_PRICE_OFFSET_X), (UINT16)(usPosY+SKI_INV_PRICE_OFFSET_Y), SKI_INV_SLOT_WIDTH, SKI_ITEM_DESC_FONT, SKI_ITEM_PRICE_COLOR, FONT_MCOLOR_BLACK, FALSE, CENTER_JUSTIFIED );
 
 			//if the item belongs to a merc
-			if( gpTempDealersInventory[ ubSlotNum ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE )
+			if( gpTempDealersInventory[ ubSlotNum ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 )
 			{
 				//Display the face of the merc
 				fDisplayMercFace = TRUE;
@@ -2918,7 +2918,7 @@ BOOLEAN DetermineArmsDealersSellingInventory( )
 				if ( armsDealerInfo[ gbSelectedArmsDealerID ].ubTypeOfArmsDealer != ARMS_DEALER_REPAIRS )
 				{
 					// no merc is the owner
-					ubOwner = NO_PROFILE;
+					ubOwner = NO_PROFILE_U8;
 				}
 				else
 				{
@@ -3047,7 +3047,7 @@ BOOLEAN RepairIsDone(DEALER_SPECIAL_ITEM* pSpecial)
 	if ( ( gbSelectedArmsDealerID == ARMS_DEALER_FREDO ) )
 	{
 		// then reset the imprinting!
-		RepairItem.ItemObject[0]->data.ubImprintID = NO_PROFILE;
+		RepairItem.ItemObject[0]->data.ubImprintID = NO_PROFILE_U8;
 	}
 #endif
 	//try to add the item to the players offer area
@@ -3535,7 +3535,7 @@ void SetSkiFaceRegionHelpText( INVENTORY_IN_SLOT *pInv, MOUSE_REGION *pRegion, U
 	Assert( pRegion );
 
 	//if the item isn't NULL, and is owned by a merc
-	if( ( pInv != NULL ) && ( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE ) )
+	if( ( pInv != NULL ) && ( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 ) )
 	{
 		BuildItemHelpTextString( zTempText, pInv, ubScreenArea );
 		// add who owns it
@@ -3646,7 +3646,7 @@ void DisplayPlayersOfferArea()
 			if( Item[ PlayersOfferArea[ sCnt ].sItemIndex ].usItemClass == IC_MONEY )
 			{
 				//get an updated status from the amount in the pocket
-				if( PlayersOfferArea[ sCnt ].bSlotIdInOtherLocation != -1 && PlayersOfferArea[ sCnt ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE )
+				if( PlayersOfferArea[ sCnt ].bSlotIdInOtherLocation != -1 && PlayersOfferArea[ sCnt ].ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 )
 				{
 					SoldierID sSoldierID = GetSoldierIDFromMercID( PlayersOfferArea[ sCnt ].ubIdOfMercWhoOwnsTheItem );
 					Assert(sSoldierID != NOBODY);
@@ -4129,7 +4129,7 @@ void MoveAllArmsDealersItemsInOfferAreaToPlayersOfferArea( )
 			if( fAddItemToPlayer ) //JA25 UB
 			{		
 #endif			
-			bSlotID = AddItemToPlayersOfferArea( NO_PROFILE, &ArmsDealerOfferArea[ uiCnt ], -1 );
+			bSlotID = AddItemToPlayersOfferArea( NO_PROFILE_U8, &ArmsDealerOfferArea[ uiCnt ], -1 );
 
 			if( bSlotID != -1 )
 			{
@@ -6470,7 +6470,7 @@ void ShopkeeperAddItemToPool( INT32 sGridNo, OBJECTTYPE *pObject, INT8 bVisible,
 void IfMercOwnedCopyItemToMercInv( INVENTORY_IN_SLOT *pInv )
 {
 	//if the item picked up was in a previous location, and that location is on a merc's inventory
-	if ( ( pInv->bSlotIdInOtherLocation != -1 ) && ( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE ) )
+	if ( ( pInv->bSlotIdInOtherLocation != -1 ) && ( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 ) )
 	{
 		// get soldier
 		SoldierID sSoldierID = GetSoldierIDFromMercID( pInv->ubIdOfMercWhoOwnsTheItem );
@@ -6480,7 +6480,7 @@ void IfMercOwnedCopyItemToMercInv( INVENTORY_IN_SLOT *pInv )
 		// then it better be a valid slot #
 		Assert( pInv->bSlotIdInOtherLocation < (INT8)(sSoldierID->inv.size()) );
 		// and it better have a valid merc who owned it
-		Assert( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE );
+		Assert( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 );
 		
 		//Copy the object back into that merc's original inventory slot
 		sSoldierID->inv[ pInv->bSlotIdInOtherLocation ] = pInv->ItemObject;
@@ -6495,10 +6495,10 @@ void IfMercOwnedRemoveItemFromMercInv( INVENTORY_IN_SLOT *pInv )
 void IfMercOwnedRemoveItemFromMercInv2( UINT8 ubOwnerProfileId, INT16 bOwnerSlotId )
 {
 	//if this item was in a previous location, and that location is on a merc's inventory
-	if ( ( bOwnerSlotId != -1 ) && ( ubOwnerProfileId != NO_PROFILE ) )
+	if ( ( bOwnerSlotId != -1 ) && ( ubOwnerProfileId != NO_PROFILE_U8 ) )
 	{
 		// and it better have a valid merc who owned it
-		Assert( ubOwnerProfileId != NO_PROFILE );
+		Assert( ubOwnerProfileId != NO_PROFILE_U8 );
 		SoldierID sSoldierID = GetSoldierIDFromMercID( ubOwnerProfileId );
 		Assert( sSoldierID != NOBODY );
 		// then it better be a valid slot #
@@ -6517,7 +6517,7 @@ BOOLEAN SKITryToReturnInvToOwnerOrCurrentMerc( INVENTORY_IN_SLOT *pInv )
 	Assert( pInv->bSlotIdInOtherLocation == -1 );
 
 	// if it does have an owner
-	if( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE )
+	if( pInv->ubIdOfMercWhoOwnsTheItem != NO_PROFILE_U8 )
 	{
 		SoldierID sSoldierID = GetSoldierIDFromMercID( pInv->ubIdOfMercWhoOwnsTheItem );
 		// if that soldier is not in player's hire any longer
@@ -6654,7 +6654,7 @@ void AddShopkeeperToGridNo( UINT8 ubProfile, INT32 sGridNo )
 
 	MercCreateStruct.initialize();
 	MercCreateStruct.bTeam				= CIV_TEAM;
-	MercCreateStruct.ubProfile		= ubProfile;
+	MercCreateStruct.ubProfile		= static_cast<int>(ubProfile); // TODO: ubProfile param is still UINT8 (AddShopkeeperToGridNo signature) - widen deliberately if needed
 	MercCreateStruct.sSectorX			= sSectorX;
 	MercCreateStruct.sSectorY			= sSectorY;
 	MercCreateStruct.bSectorZ			= gbWorldSectorZ;
@@ -6816,9 +6816,9 @@ void GivePlayerSomeChange( UINT32 uiAmount )
 	CreateMoney( uiAmount, &MoneyInvSlot.ItemObject );
 	MoneyInvSlot.sItemIndex = MoneyInvSlot.ItemObject.usItem;
 	MoneyInvSlot.ubLocationOfObject = PLAYERS_INVENTORY;
-	MoneyInvSlot.ubIdOfMercWhoOwnsTheItem = NO_PROFILE;
+	MoneyInvSlot.ubIdOfMercWhoOwnsTheItem = NO_PROFILE_U8;
 
-	AddItemToPlayersOfferArea( NO_PROFILE, &MoneyInvSlot, -1 );
+	AddItemToPlayersOfferArea( NO_PROFILE_U8, &MoneyInvSlot, -1 );
 
 	if ( ( gbSelectedArmsDealerID == ARMS_DEALER_JAKE ) &&
 		 ( gArmsDealerStatus[ gbSelectedArmsDealerID ].uiArmsDealersCash < uiAmount ) )

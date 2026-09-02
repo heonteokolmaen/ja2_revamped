@@ -6597,7 +6597,7 @@ void NCTHShowMounted( SOLDIERTYPE* pSoldier, UINT16* ptrBuf, UINT32 uiPitch, INT
 // Flugente: check a profile for a background flag without using SOLDIERTYPE
 BOOLEAN	HasBackgroundFlag( UINT8 usProfile, UINT64 aFlag )
 {
-	if ( UsingBackGroundSystem() && usProfile != NO_PROFILE )
+	if ( UsingBackGroundSystem() && usProfile != NO_PROFILE_U8 )
 	{
 		if ( zBackground[gMercProfiles[usProfile].usBackground].uiFlags & aFlag )
 			return TRUE;
@@ -6608,7 +6608,7 @@ BOOLEAN	HasBackgroundFlag( UINT8 usProfile, UINT64 aFlag )
 
 INT16 GetBackgroundValue( UINT8 usProfile, UINT16 aNr )
 {
-	if ( UsingBackGroundSystem() && usProfile != NO_PROFILE )
+	if ( UsingBackGroundSystem() && usProfile != NO_PROFILE_U8 )
 	{
 		return zBackground[gMercProfiles[usProfile].usBackground].value[aNr];
 	}

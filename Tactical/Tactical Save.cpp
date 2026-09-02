@@ -2140,7 +2140,7 @@ SoldierID GetSoldierIDFromAnyMercID(UINT8 ubMercID)
 		pTeamSoldier = cnt;
 		if ( pTeamSoldier->bActive )
 		{
-			if ( pTeamSoldier->ubProfile == ubMercID )
+			if ( pTeamSoldier->ubProfile == static_cast<int>(ubMercID) ) // TODO: ubMercID param is still UINT8 (GetSoldierIDFromAnyMercID signature) - widen deliberately if needed
 			{
 				return(cnt);
 			}

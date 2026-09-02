@@ -6517,7 +6517,7 @@ UINT32 CalcNewChanceToHitGun(SOLDIERTYPE *pSoldier, INT32 sGridNo, INT16 ubAimTi
 
 		// apply bonus from traits
 		// Flugente: moved trait modifiers into a member function
-		UINT8 targetprofile = NO_PROFILE;
+		UINT8 targetprofile = NO_PROFILE_U8; // TODO: feeds GetTraitCTHModifier's still-UINT8 param - widen deliberately if needed
 		if ( pTarget && pTarget->ubProfile != NO_PROFILE )
 			targetprofile = pTarget->ubProfile;
 
@@ -7089,7 +7089,7 @@ UINT32 CalcChanceToHitGun(SOLDIERTYPE *pSoldier, INT32 sGridNo, INT16 ubAimTime,
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Modify for traits
 	// Flugente: moved trait modifiers into a member function
-	UINT8 targetprofile = NO_PROFILE;
+	UINT8 targetprofile = NO_PROFILE_U8;
 	if ( pTarget && pTarget->ubProfile != NO_PROFILE )
 		targetprofile = pTarget->ubProfile;
 

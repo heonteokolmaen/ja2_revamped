@@ -246,6 +246,79 @@ public:
 	Inventory				Inv;
 }; // OLD_SOLDIERCREATE_STRUCT_101;
 
+// Phase 5: frozen copy of SOLDIERCREATE_STRUCT's on-disk layout as it existed through
+// MAJOR_MAP_VERSION 8.x / SAVE_GAME_VERSION INCREASED_TEAMSIZES - ubProfile was still
+// UINT8 (0-254) at that point. Both the map-file loader and the savegame placement-data
+// loader read old files into this shape and convert, the same way OLD_SOLDIERCREATE_STRUCT_101
+// and _OLD_SOLDIERCREATE_STRUCT freeze the two earlier format transitions above. Never add
+// fields here - this struct's whole purpose is to stay exactly what it is.
+class _OLD_SOLDIERCREATE_STRUCT_V8
+{
+public:
+	BOOLEAN						fStatic;
+	UINT8							ubProfile;
+	BOOLEAN						fPlayerMerc;
+	BOOLEAN						fPlayerPlan;
+	BOOLEAN						fCopyProfileItemsOver;
+
+	INT16							sSectorX;
+	INT16							sSectorY;
+	UINT8							ubDirection;
+	INT32							sInsertionGridNo;
+
+	INT8							bTeam;
+	INT8							ubBodyType;
+
+	INT8							bAttitude;
+	INT8							bOrders;
+
+	INT8							bLifeMax;
+	INT8							bLife;
+	INT8							bAgility;
+	INT8							bDexterity;
+	INT8							bExpLevel;
+	INT8							bMarksmanship;
+	INT8							bMedical;
+	INT8							bMechanical;
+	INT8							bExplosive;
+	INT8							bLeadership;
+	INT8							bStrength;
+	INT8							bWisdom;
+	INT8							bMorale;
+	INT8							bAIMorale;
+
+	PaletteRepID			HeadPal;
+	PaletteRepID			PantsPal;
+	PaletteRepID			VestPal;
+	PaletteRepID			SkinPal;
+	PaletteRepID			MiscPal;
+
+	INT32 sPatrolGrid[MAXPATROLGRIDS];
+	INT8					bPatrolCnt;
+
+	BOOLEAN						fVisible;
+	CHAR16						name[ 10 ];
+
+	UINT8						ubSoldierClass;
+
+	BOOLEAN						fOnRoof;
+
+	INT8						bSectorZ;
+
+	SOLDIERTYPE					*pExistingSoldier;
+	BOOLEAN						fUseExistingSoldier;
+	UINT8						ubCivilianGroup;
+
+	BOOLEAN						fKillSlotIfOwnerDies;
+	UINT8						ubScheduleID;
+
+	BOOLEAN						fUseGivenVehicle;
+	INT8						bUseGivenVehicleID;
+	BOOLEAN						fHasKeys;
+
+	char endOfPOD;	// marker for end of POD (plain old data)
+};
+
 // WANNE - BMP: DONE!
 class SOLDIERCREATE_STRUCT
 {
@@ -266,6 +339,8 @@ public:
 	UINT16 GetChecksum();
 
 	SOLDIERCREATE_STRUCT& operator=(const _OLD_SOLDIERCREATE_STRUCT& src);//dnl ch42 250909
+	// Phase 5: converts from the frozen pre-2048-expansion (UINT8 ubProfile) on-disk shape
+	SOLDIERCREATE_STRUCT& operator=(const _OLD_SOLDIERCREATE_STRUCT_V8& src);
 
 	// Initialize the soldier.	
 	//	Use this instead of the old method of calling memset!
@@ -282,7 +357,7 @@ public:
 	BOOLEAN						fStatic;	
 	
 	//Profile information used for special NPCs and player mercs.
-	UINT8							ubProfile;
+	ProfileID					ubProfile;
 	BOOLEAN						fPlayerMerc;
 	BOOLEAN						fPlayerPlan;
 	BOOLEAN						fCopyProfileItemsOver;
@@ -448,6 +523,7 @@ public:
 #define SIZEOF_OLD_SOLDIERCREATE_STRUCT_101_POD offsetof( OLD_SOLDIERCREATE_STRUCT_101, endOfPOD )
 #define SIZEOF_SOLDIERCREATE_STRUCT_POD offsetof( SOLDIERCREATE_STRUCT, endOfPOD )
 #define _OLD_SIZEOF_SOLDIERCREATE_STRUCT_POD offsetof( _OLD_SOLDIERCREATE_STRUCT, endOfPOD )
+#define SIZEOF_OLD_SOLDIERCREATE_STRUCT_V8_POD offsetof( _OLD_SOLDIERCREATE_STRUCT_V8, endOfPOD )
 
 
 //Original functions currently used throughout the game.
@@ -549,18 +625,18 @@ void UpdateSoldierWithStaticDetailedInformation( SOLDIERTYPE *s, SOLDIERCREATE_S
 
 //In the case of setting a profile ID in order to extract a soldier from the profile array, we
 //also want to copy that information to the static detailed placement, for editor viewing purposes.
-void UpdateStaticDetailedPlacementWithProfileInformation( SOLDIERCREATE_STRUCT *spp, UINT8 ubProfile );
+void UpdateStaticDetailedPlacementWithProfileInformation( SOLDIERCREATE_STRUCT *spp, ProfileID ubProfile );
 
 //When the editor modifies the soldier's relative attribute level,
 //this function is called to update that information.
 void ModifySoldierAttributesWithNewRelativeLevel( SOLDIERTYPE *s, INT8 bLevel );
 
 // Force the soldier to be a different ID
-void ForceSoldierProfileID( SOLDIERTYPE *pSoldier, UINT8 ubProfileID );
+void ForceSoldierProfileID( SOLDIERTYPE *pSoldier, ProfileID ubProfileID );
 
 void GeneratePaletteForSoldier( SOLDIERTYPE *pSoldier, UINT8 ubSoldierClass, UINT8 ubTeam );
 
-void QuickCreateProfileMerc( INT8 bTeam, UINT8 ubProfileID );
+void QuickCreateProfileMerc( INT8 bTeam, ProfileID ubProfileID );
 
 BOOLEAN InternalTacticalRemoveSoldier( SoldierID usSoldierIndex, BOOLEAN fRemoveVehicle );
 

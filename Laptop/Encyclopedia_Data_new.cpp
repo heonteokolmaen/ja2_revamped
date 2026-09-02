@@ -337,7 +337,7 @@ INT16 GetNextPreviousCharacter( INT16 curChar, BOOLEAN next, ENC_DATA_FILTER_CHA
 		curChar = -1;
 
 	//loop through all profiles, start with current, direction determined by next. This wraps automatically because NUM_PROFILES+1 == sizeof(UINT8) == 256
-	for( UINT8 i = curChar + (next?1:-1); 0 <= i && i < NUM_PROFILES; (next? i++: i--) )
+	for( INT16 i = curChar + (next?1:-1); 0 <= i && i < NUM_PROFILES; (next? i++: i--) )
 	{
 		//skip index 255 (used for not valid)
 		if( i == (UINT8)-1 )
@@ -703,7 +703,7 @@ BOOLEAN CreateData( INT16 newID )
 			if( !g_bUseXML_Strings )
 			{//read encoded .dat
 				//find aimbio or mercbio index matching gMercProfiles index
-				for( UINT8 i = 0; i < NUM_PROFILES - 1; i++ )
+				for( UINT16 i = 0; i < NUM_PROFILES - 1; i++ )
 					if( gAimAvailability[i].ProfilId == newID )
 					{
 						LoadEncryptedDataFromFile("BINARYDATA\\AIMBIOS.EDT", szMercInfo, 7*80*2*gAimAvailability[i].AimBio, 5*80*2);

@@ -241,8 +241,8 @@ BOOLEAN RecruitRPC( UINT8 ubCharNum );
 BOOLEAN RecruitEPC( UINT8 ubCharNum );
 BOOLEAN UnRecruitEPC( UINT8 ubCharNum );
 
-INT8 WhichBuddy( UINT8 ubCharNum, UINT8 ubBuddy );
-INT8 WhichHated( UINT8 ubCharNum, UINT8 ubHated );
+INT8 WhichBuddy( ProfileID ubCharNum, ProfileID ubBuddy );	// Phase 6: params widened UINT8 -> ProfileID; every call site already passed a ProfileID (ubProfile) that was being silently narrowed at this boundary
+INT8 WhichHated( ProfileID ubCharNum, ProfileID ubHated );	// Phase 6: same
 
 SOLDIERTYPE *ChangeSoldierTeam( SOLDIERTYPE *pSoldier, UINT8 ubTeam );
 

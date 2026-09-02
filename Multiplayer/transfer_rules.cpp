@@ -73,7 +73,11 @@ bool CTransferRules::initFromTxtFile(vfs::tReadableFile* pFile)
 						else
 						{
 							std::wstring trybuffer = L"Invalid UTF-8 character in string";
-							VFS_IGNOREEXCEPTION( trybuffer = vfs::String(sBuffer).c_wcs(), "" ); /* just make sure we don't break off when string conversion fails */
+							// Was VFS_IGNOREEXCEPTION(expr, ""); that macro's own "if(log)" tests the literal
+							// "" argument, which is a compile-time-constant-true pointer - triggers C4127/C2220
+							// under this target's /WX. Inlined here (same behavior: swallow the exception,
+							// no logging) rather than touching the shared VFS macro used elsewhere.
+							try { trybuffer = vfs::String(sBuffer).c_wcs(); } catch (std::exception&) { /* just make sure we don't break off when string conversion fails */ }
 							std::wstringstream wss;
 							wss << L"Unknown action in file \"" << pFile->getPath().c_wcs()
 								<< L", line " << line_counter << " : " << vfs::String(sBuffer).c_wcs();

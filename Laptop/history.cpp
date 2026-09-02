@@ -1084,7 +1084,7 @@ void ProcessHistoryTransactionString(STR16 pString, HistoryUnitPtr pHistory)
 			break;
 
 		case HISTORY_MERC_KILLED:
-			if( pHistory->ubSecondCode != NO_PROFILE )
+			if( pHistory->ubSecondCode != NO_PROFILE_U8 )
 				//swprintf(pString, pHistoryStrings[ HISTORY_MERC_KILLED ], gMercProfiles[pHistory->ubSecondCode].zName );
 				swprintf(pString, HistoryName[ HISTORY_MERC_KILLED ].sHistory, gMercProfiles[pHistory->ubSecondCode].zName );
 #ifdef JA2BETAVERSION

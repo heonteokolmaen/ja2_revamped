@@ -345,16 +345,16 @@ void AddDynamicOpinionEvent_New( OpinionEvent aEvent )
 {
 	DynamicOpinionSpeechEvent_EventData data;
 	data.event = aEvent;
-	data.ubProfileINTERJECTOR = NO_PROFILE;
+	data.ubProfileINTERJECTOR = NO_PROFILE_U8;
 	data.usId = 0;					// has to be 0 here, do not use a different value!
 	data.usPriority = DOST_PRIORITY_LOW;
-	memset( data.ubProfileSideCause, NO_PROFILE, DOST_INTERJECTORS_MAX * sizeof(UINT8) );
-	memset( data.ubProfileSideComplainant, NO_PROFILE, DOST_INTERJECTORS_MAX * sizeof(UINT8) );
+	memset( data.ubProfileSideCause, NO_PROFILE_U8, DOST_INTERJECTORS_MAX * sizeof(UINT8) );
+	memset( data.ubProfileSideComplainant, NO_PROFILE_U8, DOST_INTERJECTORS_MAX * sizeof(UINT8) );
 
 	// get the profile of a merc that can interjet. Pick an IMP if possible.
 	UINT8 impprofile = GetFittingInterjectorProfile( aEvent.ubEventId, aEvent.ubProfileComplainant, aEvent.ubProfileCause );
 	
-	if ( impprofile != NO_PROFILE )
+	if ( impprofile != NO_PROFILE_U8 )
 		data.ubProfileINTERJECTOR = impprofile;
 
 	DynamicOpinionSpeechEvent event;
@@ -476,7 +476,7 @@ void CreateSpeechEventsFromDynamicOpinionEvent( DynamicOpinionSpeechEvent aEvent
 			++cnt;
 
 			// chance that an INTERJECTOR tries to interfere
-			if ( aEvent.data.ubProfileINTERJECTOR != NO_PROFILE )
+			if ( aEvent.data.ubProfileINTERJECTOR != NO_PROFILE_U8 )
 			{
 				DynamicOpinionSpeechEvent impaction;
 				impaction.data = aEvent.data;
@@ -628,7 +628,7 @@ void CreateSpeechEventsFromDynamicOpinionEvent( DynamicOpinionSpeechEvent aEvent
 		// if other people are involved too, they can speak too
 		for ( UINT8 i = 0; i < DOST_INTERJECTORS_MAX; ++i )
 		{
-			if ( aEvent.data.ubProfileSideComplainant[i] != NO_PROFILE )
+			if ( aEvent.data.ubProfileSideComplainant[i] != NO_PROFILE_U8 )
 			{
 				DynamicOpinionSpeechEvent response;
 				response.data = aEvent.data;
@@ -644,7 +644,7 @@ void CreateSpeechEventsFromDynamicOpinionEvent( DynamicOpinionSpeechEvent aEvent
 				++cnt;
 			}
 
-			if ( aEvent.data.ubProfileSideCause[i] != NO_PROFILE )
+			if ( aEvent.data.ubProfileSideCause[i] != NO_PROFILE_U8 )
 			{
 				DynamicOpinionSpeechEvent response;
 				response.data = aEvent.data;
@@ -880,7 +880,7 @@ void PerformPossibleDynamicOpinionEventMerges( )
 					// if there is still room, add to the list of complainants and delete this event
 					for ( UINT8 i = 0; i < DOST_INTERJECTORS_MAX; ++i )
 					{
-						if ( event1.data.ubProfileSideComplainant[i] == NO_PROFILE )
+						if ( event1.data.ubProfileSideComplainant[i] == NO_PROFILE_U8 )
 						{
 							event1.data.ubProfileSideComplainant[i] = event2.data.event.ubProfileComplainant;
 
@@ -898,7 +898,7 @@ void PerformPossibleDynamicOpinionEventMerges( )
 					// if there is still room, add to the lsit of complainants and delete this event
 					for ( UINT8 i = 0; i < DOST_INTERJECTORS_MAX; ++i )
 					{
-						if ( event1.data.ubProfileSideCause[i] == NO_PROFILE )
+						if ( event1.data.ubProfileSideCause[i] == NO_PROFILE_U8 )
 						{
 							event1.data.ubProfileSideCause[i] = event2.data.event.ubProfileCause;
 
@@ -1275,7 +1275,7 @@ INT8 GetDynamicOpinionDay( UINT8 usProfileA, UINT8 usProfileB, UINT8 usDay )
 {
 	INT32 opinion = 0;
 
-	if ( usProfileA == NO_PROFILE || usProfileB == NO_PROFILE )
+	if ( usProfileA == NO_PROFILE_U8 || usProfileB == NO_PROFILE_U8 )
 		return opinion;
 
 	// only for today (0) or one of the last 3 days (1-3)
@@ -1302,7 +1302,7 @@ INT8 GetDynamicOpinion( UINT8 usProfileA, UINT8 usProfileB, UINT8 usEvent )
 {
 	INT32 opinion = 0;
 
-	if ( usProfileA == NO_PROFILE || usProfileB == NO_PROFILE )
+	if ( usProfileA == NO_PROFILE_U8 || usProfileB == NO_PROFILE_U8 )
 		return opinion;
 
 	// machines aren't people
@@ -1611,9 +1611,9 @@ INT8 GetDynamicOpinion( UINT8 usProfileA, UINT8 usProfileB, UINT8 usEvent )
 void HandleDynamicOpinionsDailyRefresh( )
 {
 	// a day has passed. We move all opinions one day over, but first, we remember the events of day 3 to 'long-term memory'
-	for ( UINT8 usProfileA = 0; usProfileA < NUM_PROFILES; ++usProfileA )
+	for ( UINT16 usProfileA = 0; usProfileA < NUM_PROFILES; ++usProfileA )
 	{
-		for ( UINT8 usProfileB = 0; usProfileB < NUM_PROFILES; ++usProfileB )
+		for ( UINT16 usProfileB = 0; usProfileB < NUM_PROFILES; ++usProfileB )
 		{
 			// only do this if there are any flags to begin with
 			if ( (gMercProfiles[usProfileA].usDynamicOpinionFlagmask[usProfileB][0] & OPINIONFLAG_STAGE4_ALL)
@@ -1659,7 +1659,7 @@ void HandleDynamicOpinionsDailyRefresh( )
 // a day has passed, 'age' opinions 
 void RolloverDynamicOpinions( UINT8 usProfileA )
 {
-	for ( UINT8 usProfileB = 0; usProfileB < NUM_PROFILES; ++usProfileB )
+	for ( UINT16 usProfileB = 0; usProfileB < NUM_PROFILES; ++usProfileB )
 	{
 		for ( UINT8 i = 0; i < OPINION_FLAGMASKS_NUMBER; ++i )
 		{
@@ -1730,7 +1730,7 @@ void CheckForFriendsofHated( SOLDIERTYPE* pSoldier )
 
 void HandleDynamicOpinionOnContractExtension( UINT8 ubCode, UINT8 usProfile )
 {
-	if ( usProfile == NO_PROFILE )
+	if ( usProfile == NO_PROFILE_U8 )
 		return;
 
 	if ( ubCode == EXTENDED_CONTRACT_BY_1_DAY || ubCode == EXTENDED_CONTRACT_BY_1_WEEK || ubCode == EXTENDED_CONTRACT_BY_2_WEEKS )
@@ -1759,7 +1759,7 @@ void HandleDynamicOpinionOnContractExtension( UINT8 ubCode, UINT8 usProfile )
 			for ( ; bMercID <= bLastTeamID; ++bMercID )
 			{
 				SOLDIERTYPE *pSoldier = bMercID;
-				if ( pSoldier->bActive && pSoldier->ubProfile != NO_PROFILE && pSoldier->ubProfile != usProfile &&
+				if ( pSoldier->bActive && pSoldier->ubProfile != NO_PROFILE && pSoldier->ubProfile != static_cast<int>(usProfile) && // TODO: usProfile param is still UINT8 despite its name - widen deliberately if needed
 					 !(pSoldier->bAssignment == IN_TRANSIT ||
 					 pSoldier->bAssignment == ASSIGNMENT_DEAD) )
 				{
@@ -1989,7 +1989,7 @@ UINT8 GetRandomMercInSectorNotInList( INT16 sX, INT16 sY, INT8 sZ, std::vector<U
 			 pTeamSoldier->bAssignment == ASSIGNMENT_DEAD) )
 		{
 			// only add if not already in list
-			if ( std::find( aTaboo.begin( ), aTaboo.end( ), pTeamSoldier->ubProfile ) == aTaboo.end( ) )
+			if ( std::find( aTaboo.begin( ), aTaboo.end( ), static_cast<int>(pTeamSoldier->ubProfile) ) == aTaboo.end( ) ) // TODO: aTaboo is still std::vector<UINT8> - widen deliberately if needed
 				resultvector.push_back( bMercID );
 		}
 	}
@@ -2005,19 +2005,19 @@ UINT8 GetRandomMercInSectorNotInList( INT16 sX, INT16 sY, INT8 sZ, std::vector<U
 UINT8 GetFittingInterjectorProfile( UINT8 usEvent, UINT8 usProfileVictim, UINT8 usProfileCause )
 {
 	if ( usEvent >= OPINIONEVENT_MAX )
-		return NO_PROFILE;
+		return NO_PROFILE_U8;
 
 	SoldierID idVictim = GetSoldierIDFromMercID( usProfileVictim );
 	SoldierID idCause = GetSoldierIDFromMercID( usProfileCause );
 
 	if ( idVictim == NOBODY || idCause == NOBODY )
-		return NO_PROFILE;
+		return NO_PROFILE_U8;
 
 	SOLDIERTYPE* pSoldierVictim = idVictim;
 	SOLDIERTYPE* pSoldierCause = idCause;
 
 	if ( !pSoldierVictim || !pSoldierCause )
-		return NO_PROFILE;
+		return NO_PROFILE_U8;
 
 	std::vector<UINT8>  impprofilevector;
 	std::vector<UINT8>  profilevector;
@@ -2049,7 +2049,7 @@ UINT8 GetFittingInterjectorProfile( UINT8 usEvent, UINT8 usProfileVictim, UINT8 
 			continue;
 
 		// exclude victim and cause
-		if ( pTeamSoldier->ubProfile == usProfileVictim || pTeamSoldier->ubProfile == usProfileCause )
+		if ( pTeamSoldier->ubProfile == static_cast<int>(usProfileVictim) || pTeamSoldier->ubProfile == static_cast<int>(usProfileCause) ) // TODO: both params are still UINT8 despite their names - widen deliberately if needed
 			continue;
 				
 		profilevector.push_back( pTeamSoldier->ubProfile );
@@ -2065,7 +2065,7 @@ UINT8 GetFittingInterjectorProfile( UINT8 usEvent, UINT8 usProfileVictim, UINT8 
 	if ( !profilevector.empty( ) )
 		return profilevector[Random( profilevector.size( ) )];
 
-	return NO_PROFILE;
+	return NO_PROFILE_U8;
 }
 
 UINT8 HighestInventoryCoolness( SOLDIERTYPE* pSoldier )

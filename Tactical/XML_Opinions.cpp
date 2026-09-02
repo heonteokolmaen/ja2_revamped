@@ -295,7 +295,9 @@ BOOLEAN WriteMercOpinions()
 
 			FilePrintf(hFile,"</zNickname>\r\n");
 
-			UINT8 cnt_b = 0;
+			// Phase 6: was UINT8 (max 255) - now that NUMBER_OF_OPINIONS is NUM_PROFILES(2048), a UINT8
+			// counter would wrap forever and never reach the loop bound (infinite loop).
+			UINT16 cnt_b = 0;
 			for (cnt_b = 0; cnt_b < NUMBER_OF_OPINIONS; ++cnt_b)
 			{
 				if (gMercProfiles[cnt].bMercOpinion[cnt_b] != 0)

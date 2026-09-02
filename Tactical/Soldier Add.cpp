@@ -1772,7 +1772,7 @@ BOOLEAN IsMercOnTeam(UINT8 ubMercID, BOOLEAN aAlreadyInCountry, BOOLEAN aAlive)
 	for ( ; cnt <= ubLastTeamID; ++cnt )
 	{
 		pTeamSoldier = cnt;
-		if ( pTeamSoldier->ubProfile == ubMercID && pTeamSoldier->bActive )
+		if ( pTeamSoldier->ubProfile == static_cast<int>(ubMercID) && pTeamSoldier->bActive ) // TODO: ubMercID param is still UINT8 (IsMercOnTeam signature) - widen deliberately if needed
 		{
 			if ( aAlreadyInCountry && pTeamSoldier->bAssignment == IN_TRANSIT )
 				continue;
@@ -1798,7 +1798,7 @@ SoldierID GetSoldierIDFromMercID(UINT8 ubMercID)
 	for ( ; cnt <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++cnt )
 	{
 		pTeamSoldier = cnt;
-		if ( pTeamSoldier->ubProfile == ubMercID )
+		if ( pTeamSoldier->ubProfile == static_cast<int>(ubMercID) ) // TODO: ubMercID param is still UINT8 - widen deliberately if needed
 		{
 			if( pTeamSoldier->bActive )
 				return( cnt );

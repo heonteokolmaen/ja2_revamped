@@ -2977,7 +2977,7 @@ UINT32 UIHandleCAMercShoot( UI_EVENT *pUIEvent )
 					&& !ItemIsGascan(usItem)
 					&& !ItemIsToolkit(usItem)
 					&& !ItemCanBeAppliedToOthers( usItem )
-					&& gTacticalStatus.ubLastRequesterTargetID != pTSoldier->ubProfile 
+					&& static_cast<int>(gTacticalStatus.ubLastRequesterTargetID) != pTSoldier->ubProfile // TODO: ubLastRequesterTargetID is still UINT8 (Overhead.h) - widen deliberately if needed
 					&& ( pTSoldier->ubID != pSoldier->ubID ) )
 				{
 					CHAR16	zStr[200];

@@ -661,7 +661,7 @@ fFirstTimeInMapScreen = TRUE;
 	// ------------------------
 	// Reset mercs profiles
 	// ------------------------
-	UINT8 i;
+	UINT16 i;
 
 	for(i=0; i<NUM_PROFILES; i++)
 	{

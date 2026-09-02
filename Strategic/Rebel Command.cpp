@@ -2980,7 +2980,7 @@ void PrepareMission(INT8 index)
 				for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 				{
 					SOLDIERTYPE* pSoldier = i;
-					if (pSoldier->ubProfile == evt.mercProfileId)
+					if (pSoldier->ubProfile == static_cast<int>(evt.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionFirstEvent - widen there first if this needs to see profiles above 255
 					{
 						TakeSoldierOutOfVehicle(pSoldier);
 						RemoveCharacterFromSquads(pSoldier);
@@ -4886,7 +4886,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 		{
 			const SOLDIERTYPE* pSoldier = i;
 
-			if (pSoldier->ubProfile == evt1.mercProfileId && pSoldier->bActive)
+			if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId) && pSoldier->bActive) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
 			{
 				foundMerc = TRUE;
 				break;
@@ -4956,7 +4956,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 					for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 					{
 						SOLDIERTYPE* pSoldier = i;
-						if (pSoldier->ubProfile == evt1.mercProfileId)
+						if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
 						{
 							if (mission == RCAM_FORGE_TRANSPORT_ORDERS)
 							{
@@ -4983,7 +4983,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 				for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 				{
 					SOLDIERTYPE* pSoldier = i;
-					if (pSoldier->ubProfile == evt1.mercProfileId)
+					if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
 					{
 						// mission failed! we tried, give some pity exp
 						StatChange(pSoldier, LDRAMT, 20, FROM_FAILURE);
@@ -5005,7 +5005,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 			for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 			{
 				SOLDIERTYPE* pSoldier = i;
-				if (pSoldier->ubProfile == evt1.mercProfileId)
+				if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
 				{
 					// merc ready for reassignment
 					pSoldier->bSectorZ -= REBEL_COMMAND_Z_OFFSET;

@@ -639,10 +639,12 @@ void ReplaceSoldierProfileInPlayerGroup( UINT8 ubGroupID, UINT8 ubOldProfile, UI
 
 	while( curr )
 	{
-		if( curr->ubProfileID == ubOldProfile )
+		// Phase 6: ubOldProfile/ubNewProfile stay UINT8 - their only caller (SwapToProfile) is itself a
+		// separate, larger already-UINT8-narrow migration, out of scope here - so compare/assign explicitly.
+		if( static_cast<int>(curr->ubProfileID) == ubOldProfile )
 		{
 			// replace and return!
-			curr->ubProfileID = ubNewProfile;
+			curr->ubProfileID = static_cast<int>(ubNewProfile);
 			return;
 		}
 		curr = curr->next;

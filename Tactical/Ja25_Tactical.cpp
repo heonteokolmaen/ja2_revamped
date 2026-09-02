@@ -449,7 +449,7 @@ UINT8 GetNumSoldierIdAndProfileIdOfTheNewMercsOnPlayerTeam( SoldierID *pSoldierI
 		memset( pSoldierIdArray, NOBODY, NUM_MERCS_WITH_NEW_QUOTES );
 
 	if( pProfileIdArray )
-		memset( pProfileIdArray, NO_PROFILE, NUM_MERCS_WITH_NEW_QUOTES );
+		memset( pProfileIdArray, NO_PROFILE_U8, NUM_MERCS_WITH_NEW_QUOTES );
 
 	INT32 cnt = gTacticalStatus.Team[ OUR_TEAM ].bFirstID;
 

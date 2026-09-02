@@ -216,8 +216,8 @@ BOOLEAN							gfInTalkPanel = FALSE;
 SOLDIERTYPE					*gpSrcSoldier	= NULL;
 SOLDIERTYPE					*gpDestSoldier	= NULL;
 UINT8								gubSrcSoldierProfile;
-UINT8								gubNiceNPCProfile = NO_PROFILE;
-UINT8								gubNastyNPCProfile = NO_PROFILE;
+UINT8								gubNiceNPCProfile = NO_PROFILE_U8;
+UINT8								gubNastyNPCProfile = NO_PROFILE_U8;
 
 UINT8								gubTargetNPC;
 UINT8								gubTargetRecord;
@@ -344,7 +344,7 @@ BOOLEAN InternalInitiateConversation( SOLDIERTYPE *pDestSoldier, SOLDIERTYPE *pS
 	}
 	else
 	{
-		gubSrcSoldierProfile = NO_PROFILE;
+		gubSrcSoldierProfile = NO_PROFILE_U8;
 	}
 
 	// find which squad this guy is, then set selected squad to this guy
@@ -681,7 +681,7 @@ void DeleteTalkingMenu( )
 			BOOLEAN fNice = FALSE;
 			SOLDIERTYPE * pNPC;
 
-			if ( gubNiceNPCProfile != NO_PROFILE )
+			if ( gubNiceNPCProfile != NO_PROFILE_U8 )
 			{
 				ubNPC = gubNiceNPCProfile;
 				fNice = TRUE;
@@ -691,7 +691,7 @@ void DeleteTalkingMenu( )
 				ubNPC = gubNastyNPCProfile;
 			}
 
-			if ( ubNPC != NO_PROFILE )
+			if ( ubNPC != NO_PROFILE_U8 )
 			{
 				pNPC = FindSoldierByProfileID( ubNPC, FALSE );
 				if (pNPC)
@@ -705,8 +705,8 @@ void DeleteTalkingMenu( )
 					{
 						SayQuoteFromNearbyMercInSector( pNPC->sGridNo, 10, QUOTE_ANNOYING_PC );
 					}
-					gubNiceNPCProfile = NO_PROFILE;
-					gubNastyNPCProfile = NO_PROFILE;
+					gubNiceNPCProfile = NO_PROFILE_U8;
+					gubNastyNPCProfile = NO_PROFILE_U8;
 					SetFactFalse( FACT_NEED_TO_SAY_SOMETHING );
 				}
 			}
@@ -878,9 +878,9 @@ void RenderTalkingMenu( )
 			{
 
 			#ifdef _DEBUG
-				if (gubSrcSoldierProfile != NO_PROFILE && ubCharacterNum != NO_PROFILE)
+				if (gubSrcSoldierProfile != NO_PROFILE_U8 && ubCharacterNum != NO_PROFILE_U8)
 			#else
-				if ( CHEATER_CHEAT_LEVEL() && gubSrcSoldierProfile != NO_PROFILE && ubCharacterNum != NO_PROFILE)
+				if ( CHEATER_CHEAT_LEVEL() && gubSrcSoldierProfile != NO_PROFILE_U8 && ubCharacterNum != NO_PROFILE_U8)
 			#endif
 				{
 					switch( cnt )
@@ -1158,7 +1158,7 @@ BOOLEAN ProfileCurrentlyTalkingInDialoguePanel( UINT8 ubProfile )
 	{
 		if ( gpDestSoldier != NULL )
 		{
-			if ( gpDestSoldier->ubProfile == ubProfile )
+			if ( gpDestSoldier->ubProfile == static_cast<int>(ubProfile) ) // TODO: ubProfile param is still UINT8 - widen deliberately if needed
 			{
 				return( TRUE );
 			}
@@ -1585,7 +1585,7 @@ void HandleNPCTrigger( )
 			if ( gfShowDialogueMenu )
 			{
 				// Converse another way!
-				Converse( gubTargetNPC, NO_PROFILE, gubTargetApproach, gubTargetRecord );
+				Converse( gubTargetNPC, NO_PROFILE_U8, gubTargetApproach, gubTargetRecord );
 			}
 			else if (gpSrcSoldier != NULL) // if we can, reinitialize menu
 			{
@@ -1594,7 +1594,7 @@ void HandleNPCTrigger( )
 		}
 		else
 		{
-			Converse( gubTargetNPC, NO_PROFILE, gubTargetApproach, gubTargetRecord );
+			Converse( gubTargetNPC, NO_PROFILE_U8, gubTargetApproach, gubTargetRecord );
 		}
 	}
 	else
@@ -1627,7 +1627,7 @@ void HandleNPCTrigger( )
 		else
 		{
 			// Converse another way!
-			Converse( gubTargetNPC, NO_PROFILE, gubTargetApproach, gubTargetRecord );
+			Converse( gubTargetNPC, NO_PROFILE_U8, gubTargetApproach, gubTargetRecord );
 		}
 	}
 
@@ -2377,7 +2377,7 @@ void HandleNPCDoAction( UINT8 ubTargetNPC, UINT16 usActionCode, UINT8 ubQuoteNum
 				AddHistoryToPlayersLog( HISTORY_TALKED_TO_FATHER_WALKER, 0, GetWorldTotalMin(), gWorldSectorX, gWorldSectorY );
 				AddFutureDayStrategicEvent( EVENT_SET_BY_NPC_SYSTEM, GetWorldMinutesInDay(), NPC_SYSTEM_EVENT_ACTION_PARAM_BONUS + NPC_ACTION_TRIGGER_END_OF_FOOD_QUEST, 1 );
 				// SANDRO - merc records - quest counter (food quest)
-				GiveQuestRewardPoint( gWorldSectorX, gWorldSectorY, 4, NO_PROFILE );
+				GiveQuestRewardPoint( gWorldSectorX, gWorldSectorY, 4, NO_PROFILE_U8 );
 				break;
 
 			case NPC_ACTION_REMOVE_CONRAD:
@@ -2402,7 +2402,7 @@ void HandleNPCDoAction( UINT8 ubTargetNPC, UINT16 usActionCode, UINT8 ubQuoteNum
 			case NPC_ACTION_KROTT_REQUESTOR:
 			case NPC_ACTION_WALDO_REPAIR_REQUESTOR:
 				// Vince or Willis asks about payment? for medical attention
-				if (ubTargetNPC != gpDestSoldier->ubProfile)
+				if (static_cast<int>(ubTargetNPC) != gpDestSoldier->ubProfile) // TODO: ubTargetNPC param is still UINT8 - widen deliberately if needed
 				{
 					#ifdef JA2BETAVERSION
 						ScreenMsg( FONT_MCOLOR_RED, MSG_ERROR, L"Inconsistency between HandleNPCDoAction and target profile IDs" );
@@ -4128,7 +4128,7 @@ void HandleNPCDoAction( UINT8 ubTargetNPC, UINT16 usActionCode, UINT8 ubQuoteNum
 					
 					// WANNE: Disabled the quest reward points, because the whole team gets experience points too fast when doing some boxing
 					// SANDRO - merc records - quest counter (Kingpin impressed)
-					//GiveQuestRewardPoint( gWorldSectorX, gWorldSectorY, 4, NO_PROFILE );
+					//GiveQuestRewardPoint( gWorldSectorX, gWorldSectorY, 4, NO_PROFILE_U8 );
 				}
 				break;
 
@@ -5229,7 +5229,7 @@ void PerformJerryMiloAction302()
 	//if there is at least 1 of the desired mercs found
 	if( usNumMercsPresent > 0 )
 	{
-		UINT8 ubProfileID = NO_PROFILE;
+		UINT8 ubProfileID = NO_PROFILE_U8;
 		UINT8	ubIdOfMercWhoSaidQuote;
 
 		ubIdOfMercWhoSaidQuote = Random( usNumMercsPresent );

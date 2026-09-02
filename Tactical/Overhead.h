@@ -7,7 +7,7 @@
 #include <EditorMercs.h>
 #include "Soldier Find.h"
 #include "Campaign Types.h"		// added by Flugente for SECTORINFO and UNDERGROUND_SECTORINFO
-#define             ADD_SOLDIER_NO_PROFILE_ID       200
+#define             ADD_SOLDIER_NO_PROFILE_ID       NO_PROFILE	// unused today, but kept in sync with NO_PROFILE rather than duplicating its old value
 
 #define MAX_REALTIME_SPEED_VAL                      10
 

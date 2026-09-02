@@ -470,7 +470,7 @@ BOOLEAN	MercContractHandling( SOLDIERTYPE	*pSoldier, UINT8 ubDesiredAction )
 BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 {
 	UINT8	i;
-	UINT8	bMercID;
+	ProfileID	bMercID;	// Phase 6: widened UINT8 -> ProfileID
 	BOOLEAN fBuddyAround = FALSE;
 	BOOLEAN fUnhappy = FALSE;
 	UINT16 usBuddyQuote=0;
@@ -515,11 +515,12 @@ BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 				continue;
 		}
 
-		if( bMercID < 0 )
+		// Phase 6: sentinel fixed to compare against the frozen 255 cap, not the live (now 2048) NUM_PROFILES
+		if( bMercID == NUM_PROFILES_v255 )
 			continue;
 
 		// is this buddy on the team?
-		if( IsMercOnTeam( (UINT8) bMercID, FALSE, FALSE ) )
+		if( IsMercOnTeam( static_cast<UINT8>(bMercID), FALSE, FALSE ) )	// Phase 6: IsMercOnTeam itself is a separate, wider migration - out of scope here
 		{
 			fBuddyAround = TRUE;
 
@@ -552,10 +553,11 @@ BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 	{
 		bMercID = gMercProfiles[ pSoldier->ubProfile ].bHated[ i ];
 
-		if( bMercID < 0 )
+		// Phase 6: sentinel fixed to compare against the frozen 255 cap, not the live (now 2048) NUM_PROFILES
+		if( bMercID == NUM_PROFILES_v255 )
 			continue;
 
-		if( IsMercOnTeam( (UINT8) bMercID, TRUE, TRUE ) )
+		if( IsMercOnTeam( static_cast<UINT8>(bMercID), TRUE, TRUE ) )
 		{
 			if ( gMercProfiles[ pSoldier->ubProfile ].bHatedCount[ i ] == 0 )
 			{
@@ -564,7 +566,7 @@ BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 			}
 			else 			// else tolerance is > 0, only gripe if in same sector
 			{
-				pHated = FindSoldierByProfileID( bMercID, TRUE );
+				pHated = FindSoldierByProfileID( static_cast<UINT8>(bMercID), TRUE );	// Phase 6: FindSoldierByProfileID itself is a separate, wider migration - out of scope here
 				if ( pHated && pHated->sSectorX == pSoldier->sSectorX &&
 									pHated->sSectorY == pSoldier->sSectorY &&
 									pHated->bSectorZ == pSoldier->bSectorZ )
@@ -597,9 +599,12 @@ BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 		// now check for learn to hate
 		bMercID = gMercProfiles[ pSoldier->ubProfile ].bLearnToHate;
 
-		if ( bMercID >= 0 )
+		// Phase 6: was "bMercID >= 0", always-true on an unsigned type (pre-existing dead condition -
+		// the sentinel check never actually filtered "no learn-to-hate"); now correctly excludes the
+		// frozen 255 "none" sentinel.
+		if ( bMercID != NUM_PROFILES_v255 )
 		{
-			if ( IsMercOnTeam( (UINT8) bMercID, TRUE, TRUE ) )
+			if ( IsMercOnTeam( static_cast<UINT8>(bMercID), TRUE, TRUE ) )	// Phase 6: IsMercOnTeam itself is a separate, wider migration - out of scope here
 			{
 				if ( gMercProfiles[ pSoldier->ubProfile ].bLearnToHateCount == 0 )
 				{
@@ -610,7 +615,7 @@ BOOLEAN WillMercRenew( SOLDIERTYPE	*pSoldier, BOOLEAN fSayQuote )
 				}
 				else if ( gMercProfiles[ pSoldier->ubProfile ].bLearnToHateCount <= gMercProfiles[ pSoldier->ubProfile ].bLearnToHateTime / 2 )
 				{
-					pHated = FindSoldierByProfileID( bMercID, TRUE );
+					pHated = FindSoldierByProfileID( static_cast<UINT8>(bMercID), TRUE );	// Phase 6: FindSoldierByProfileID itself is a separate, wider migration - out of scope here
 					if ( pHated && pHated->sSectorX == pSoldier->sSectorX &&
 										pHated->sSectorY == pSoldier->sSectorY &&
 										pHated->bSectorZ == pSoldier->bSectorZ )

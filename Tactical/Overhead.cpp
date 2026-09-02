@@ -749,7 +749,7 @@ BOOLEAN InitOverhead( )
     else
         gTacticalStatus.fDidGameJustStart = TRUE;
 
-    gTacticalStatus.ubLastRequesterTargetID = NO_PROFILE;
+    gTacticalStatus.ubLastRequesterTargetID = NO_PROFILE_U8;
     gTacticalStatus.ubLastRequesterSurgeryTargetID = NOBODY; // SANDRO - reset surgery requester too
 
     for ( cnt = 0; cnt < NUM_PANIC_TRIGGERS; cnt++ )
@@ -4474,7 +4474,7 @@ void MakeCivHostile(SOLDIERTYPE *pSoldier)
 UINT8 CivilianGroupMembersChangeSidesWithinProximity( SOLDIERTYPE * pAttacked )
 {
     SOLDIERTYPE * pSoldier;
-    UINT8 ubFirstProfile = NO_PROFILE;
+    UINT8 ubFirstProfile = NO_PROFILE_U8;
 
     if ( pAttacked->ubCivilianGroup == NON_CIV_GROUP )
     {
@@ -4500,7 +4500,7 @@ UINT8 CivilianGroupMembersChangeSidesWithinProximity( SOLDIERTYPE * pAttacked )
                         AddToShouldBecomeHostileOrSayQuoteList( pSoldier->ubID );
                     }
 
-                    if ( pSoldier->ubProfile != NO_PROFILE && pSoldier->aiData.bOppCnt > 0 && ( ubFirstProfile == NO_PROFILE || Random( 2 ) ) )
+                    if ( pSoldier->ubProfile != NO_PROFILE && pSoldier->aiData.bOppCnt > 0 && ( ubFirstProfile == NO_PROFILE_U8 || Random( 2 ) ) )
                     {
                         ubFirstProfile = pSoldier->ubProfile;
                     }
@@ -4518,7 +4518,7 @@ SOLDIERTYPE * CivilianGroupMemberChangesSides( SOLDIERTYPE * pAttacked )
     SOLDIERTYPE * pNew;
     SOLDIERTYPE * pNewAttacked = pAttacked;
     SOLDIERTYPE * pSoldier;
-    UINT8 ubFirstProfile = NO_PROFILE;
+    UINT8 ubFirstProfile = NO_PROFILE_U8;
 
     if ( pAttacked->ubCivilianGroup == NON_CIV_GROUP )
     {
@@ -4536,7 +4536,7 @@ SOLDIERTYPE * CivilianGroupMemberChangesSides( SOLDIERTYPE * pAttacked )
             if (pSoldier->ubCivilianGroup == pAttacked->ubCivilianGroup)
             {
                 // should become hostile
-                if ( pSoldier->ubProfile != NO_PROFILE && ( ubFirstProfile == NO_PROFILE || Random( 2 ) ) )
+                if ( pSoldier->ubProfile != NO_PROFILE && ( ubFirstProfile == NO_PROFILE_U8 || Random( 2 ) ) )
                 {
                     ubFirstProfile = pSoldier->ubProfile;
                 }
@@ -4552,7 +4552,7 @@ SOLDIERTYPE * CivilianGroupMemberChangesSides( SOLDIERTYPE * pAttacked )
     }
 
     // now change sides for anyone on the civ team within proximity
-    if ( ubFirstProfile == NO_PROFILE )
+    if ( ubFirstProfile == NO_PROFILE_U8 )
     {
         // get first profile value
         ubFirstProfile = CivilianGroupMembersChangeSidesWithinProximity( pNewAttacked );
@@ -4564,7 +4564,7 @@ SOLDIERTYPE * CivilianGroupMemberChangesSides( SOLDIERTYPE * pAttacked )
     }
 
     /*
-       if ( ubFirstProfile != NO_PROFILE )
+       if ( ubFirstProfile != NO_PROFILE_U8 )
        {
        TriggerFriendWithHostileQuote( ubFirstProfile );
        }
@@ -4630,7 +4630,7 @@ void CivilianGroupChangesSides( UINT8 ubCivilianGroup )
                     AddToShouldBecomeHostileOrSayQuoteList( pSoldier->ubID );
                 }
                 /*
-                   if ( (pSoldier->ubProfile != NO_PROFILE) && (pSoldier->aiData.bOppCnt > 0) && ( ubFirstProfile == NO_PROFILE || Random( 2 ) ) )
+                   if ( (pSoldier->ubProfile != NO_PROFILE) && (pSoldier->aiData.bOppCnt > 0) && ( ubFirstProfile == NO_PROFILE_U8 || Random( 2 ) ) )
                    {
                    ubFirstProfile = pSoldier->ubProfile;
                    }
@@ -4640,7 +4640,7 @@ void CivilianGroupChangesSides( UINT8 ubCivilianGroup )
     }
 
     /*
-       if ( ubFirstProfile != NO_PROFILE )
+       if ( ubFirstProfile != NO_PROFILE_U8 )
        {
        TriggerFriendWithHostileQuote( ubFirstProfile );
        }

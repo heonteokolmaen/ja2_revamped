@@ -6,21 +6,159 @@
 #define OLD_MAXPATROLGRIDS	10
 #define MAXPATROLGRIDS		OLD_MAXPATROLGRIDS
 
-// WANNE: Yes I know, we support up to 254 profiles, but because of compatibility, profile Id = 200
-// is not a valid profil. We in MercProfiles.xml, the profile id = 200 should not be used!
-#define	NO_PROFILE			200
-
 #include "Animation Cache.h"
 #include "Timer Control.h"
 #include "vobject.h"
 #include "Overhead Types.h"
 #include "Item Types.h"
 #include "worlddef.h"
+#include "Profile Constants.h"
 #include <vector>
 #include <iterator>
 #include "GameSettings.h"	// added by Flugente
 #include "Disease.h"		// added by Flugente
 #include <functional>
+
+// "No profile" sentinel. Deliberately NOT NUM_PROFILES or any other value that
+// tracks the current profile-count ceiling: 0xFFFF stays out of range for any
+// realistic profile count this project would ever reach, so it never needs
+// touching again when NUM_PROFILES changes.
+//
+// Formerly 200 - inside the valid profile range on purpose was never the plan,
+// it was a historical workaround (see the removed WANNE comment this replaced):
+// profile 200 was simply never assigned in MercProfiles.xml to dodge the
+// collision. That workaround is obsolete now that the sentinel itself lives
+// outside the valid range - profile 200 is free to use like any other.
+#define	NO_PROFILE			0xFFFF
+
+// Narrow-field counterpart of NO_PROFILE, for the fields Phase 2 deliberately left
+// UINT8 (saved item/vehicle data, bit-packed event params, shared external
+// signatures) rather than widen to ProfileID. NO_PROFILE itself (0xFFFF) doesn't
+// fit in a byte - using it to assign or compare against one of those fields either
+// fails to compile (assignment) or silently does the wrong thing forever
+// (comparison: UINT8 always promotes and compares as "not equal", so an
+// `== NO_PROFILE` check would never fire, and a `< NO_PROFILE` check would always
+// be true - neither is caught by the compiler). 255 is guaranteed unused today:
+// NUM_PROFILES is 255, so valid profile indices only go up to 254.
+// TODO(Phase 4): once NUM_PROFILES grows, re-check every remaining UINT8 profile
+// field - either it gets widened for real, or this constant needs to move again.
+#define NO_PROFILE_U8		255
+
+// ubImprintID (Item Types.h) has a second, separate marker on top of
+// NO_PROFILE_U8: an imprinted-but-unnamed "generic dude" owner. The vanilla
+// scheme picked this as NO_PROFILE+1 specifically so a single `< NO_PROFILE`
+// check filtered out both markers at once - that only works because they were
+// numerically adjacent, one past the other. NO_PROFILE_U8 is now 255, the
+// type's max value, so there's no room left "past" it for a second marker;
+// give this one its own explicit value instead, and check for each marker by
+// name rather than relying on ordering.
+#define GENERIC_MERC_IMPRINT_ID	201
+
+// ProfileID: strongly-typed mercenary/NPC profile index.
+//
+// Mirrors SoldierID (Overhead Types.h) and its transitional strategy:
+//   - Construction from a raw 8-bit value is deleted, so any code that still
+//     passes a UINT8/INT8 profile index around fails to *compile* instead of
+//     being found by hand. That failing call-site list is the real, complete
+//     to-do list for migrating the rest of the codebase off UINT8 profiles.
+//   - An implicit conversion *to* UINT16 is kept so code that hasn't been
+//     migrated to take a ProfileID parameter yet still reads correctly.
+//   - Out-of-range construction clamps to NO_PROFILE, the way SoldierID
+//     clamps to NOBODY - anything at or past NUM_PROFILES isn't a real
+//     profile slot, so treat it as "no profile" rather than let it silently
+//     index one past gMercProfiles[].
+// TODO: remove the implicit-to-UINT16 conversion once ProfileID is used
+// everywhere and narrow (UINT8) profile parameters no longer exist.
+typedef struct ProfileID
+{
+	UINT16 i;
+
+	inline operator UINT16() const { return i; }
+
+	constexpr ProfileID(const UINT16 val = NO_PROFILE) : i(val >= NUM_PROFILES && val != NO_PROFILE ? NO_PROFILE : val) {}
+	constexpr ProfileID(const UINT32 val) : i(val >= NUM_PROFILES && val != NO_PROFILE ? NO_PROFILE : static_cast<UINT16>(val)) {}
+	constexpr ProfileID(const INT32 val) : i(val < 0 || (val >= NUM_PROFILES && val != NO_PROFILE) ? NO_PROFILE : static_cast<UINT16>(val)) {}
+
+	// No conversions from 8-bit integers!
+	ProfileID(const UINT8) = delete;
+	ProfileID(const INT8) = delete;
+
+} ProfileID;
+
+// Two overloads per operator: (ProfileID,ProfileID), and (ProfileID,int) in
+// both operand orders. That int pair matters more than it looks: ProfileID
+// also has an implicit *conversion to* UINT16 (above), so without a
+// zero-conversion int overload to win outright, the compiler treats
+// "convert the int/enum argument to ProfileID" and "convert the ProfileID
+// argument to UINT16 and use a built-in or SoldierID's operator==" as
+// equally good candidates - genuinely ambiguous, not just noisy. A plain
+// `int` overload is an exact match for a literal or an unscoped enum
+// (NPCIDs-style profile-ID constants are common in this codebase), which
+// beats every user-defined-conversion alternative outright.
+// (Earlier this carried a UINT16/UINT32/INT16 overload apiece too, mirroring
+// SoldierID - that recreated the same ambiguity a different way: for a bare
+// int argument, "int -> UINT16" and "int -> UINT32" rank equally, so MSVC
+// couldn't choose between those overloads either. A UINT16/UINT32 argument
+// still reaches the int overload below fine, via ordinary promotion.)
+inline bool operator==(const ProfileID lhs, const ProfileID rhs) { return lhs.i == rhs.i; }
+inline bool operator==(const ProfileID lhs, const int rhs) { return lhs.i == rhs; }
+inline bool operator==(const int lhs, const ProfileID rhs) { return lhs == rhs.i; }
+inline bool operator==(const ProfileID lhs, const INT16 rhs) { return lhs.i == rhs; }
+inline bool operator==(const INT16 lhs, const ProfileID rhs) { return lhs == rhs.i; }
+
+inline bool operator!=(const ProfileID lhs, const ProfileID rhs) { return lhs.i != rhs.i; }
+inline bool operator!=(const ProfileID lhs, const int rhs) { return lhs.i != rhs; }
+inline bool operator!=(const int lhs, const ProfileID rhs) { return lhs != rhs.i; }
+inline bool operator!=(const ProfileID lhs, const INT16 rhs) { return lhs.i != rhs; }
+inline bool operator!=(const INT16 lhs, const ProfileID rhs) { return lhs != rhs.i; }
+
+inline bool operator<(const ProfileID lhs, const ProfileID rhs) { return lhs.i < rhs.i; }
+inline bool operator<(const ProfileID lhs, const int rhs) { return lhs.i < rhs; }
+inline bool operator<(const int lhs, const ProfileID rhs) { return lhs < rhs.i; }
+inline bool operator<(const ProfileID lhs, const INT16 rhs) { return lhs.i < rhs; }
+inline bool operator<(const INT16 lhs, const ProfileID rhs) { return lhs < rhs.i; }
+
+inline bool operator>(const ProfileID lhs, const ProfileID rhs) { return lhs.i > rhs.i; }
+inline bool operator>(const ProfileID lhs, const int rhs) { return lhs.i > rhs; }
+inline bool operator>(const int lhs, const ProfileID rhs) { return lhs > rhs.i; }
+inline bool operator>(const ProfileID lhs, const INT16 rhs) { return lhs.i > rhs; }
+inline bool operator>(const INT16 lhs, const ProfileID rhs) { return lhs > rhs.i; }
+
+inline bool operator<=(const ProfileID lhs, const ProfileID rhs) { return lhs.i <= rhs.i; }
+inline bool operator<=(const ProfileID lhs, const int rhs) { return lhs.i <= rhs; }
+inline bool operator<=(const int lhs, const ProfileID rhs) { return lhs <= rhs.i; }
+inline bool operator<=(const ProfileID lhs, const INT16 rhs) { return lhs.i <= rhs; }
+inline bool operator<=(const INT16 lhs, const ProfileID rhs) { return lhs <= rhs.i; }
+
+inline bool operator>=(const ProfileID lhs, const ProfileID rhs) { return lhs.i >= rhs.i; }
+inline bool operator>=(const ProfileID lhs, const int rhs) { return lhs.i >= rhs; }
+inline bool operator>=(const int lhs, const ProfileID rhs) { return lhs >= rhs.i; }
+inline bool operator>=(const ProfileID lhs, const INT16 rhs) { return lhs.i >= rhs; }
+inline bool operator>=(const INT16 lhs, const ProfileID rhs) { return lhs >= rhs.i; }
+
+inline ProfileID operator-(const ProfileID lhs, const ProfileID rhs) { return ProfileID{ static_cast<UINT16>(lhs.i - rhs.i) }; }
+inline ProfileID operator-(const ProfileID lhs, const int rhs) { return ProfileID{ static_cast<UINT16>(lhs.i - rhs) }; }
+
+inline ProfileID operator+(const ProfileID lhs, const ProfileID rhs) { return ProfileID{ static_cast<UINT16>(lhs.i + rhs.i) }; }
+inline ProfileID operator+(const ProfileID lhs, const int rhs) { return ProfileID{ static_cast<UINT16>(lhs.i + rhs) }; }
+
+// Explicitly deleted rather than left to fall through to the int overloads
+// above: a raw UINT8/INT8 promotes to int on its own (that's a language
+// rule, the deleted *constructor* can't stop it), so without these a
+// leftover "UINT8 profileId" comparison doesn't fail cleanly - it becomes
+// ambiguous between the int overload above and a built-in operator reached
+// through ProfileID's own operator UINT16(), which is a much harder error
+// to read than what it actually means: this call site still has a narrow
+// profile variable that needs to become a ProfileID.
+inline bool operator==(const ProfileID, const UINT8) = delete;
+inline bool operator==(const UINT8, const ProfileID) = delete;
+inline bool operator==(const ProfileID, const INT8) = delete;
+inline bool operator==(const INT8, const ProfileID) = delete;
+inline bool operator!=(const ProfileID, const UINT8) = delete;
+inline bool operator!=(const UINT8, const ProfileID) = delete;
+inline bool operator!=(const ProfileID, const INT8) = delete;
+inline bool operator!=(const INT8, const ProfileID) = delete;
+inline ProfileID operator+(const int lhs, const ProfileID rhs) { return ProfileID{ static_cast<UINT16>(lhs + rhs.i) }; }
 
 #define PTR_CIVILIAN	(pSoldier->bTeam == CIV_TEAM)
 #define PTR_CROUCHED	(gAnimControl[ pSoldier->usAnimState ].ubHeight == ANIM_CROUCH)
@@ -1313,7 +1451,7 @@ public:
 	INT16			usUIMovementMode;
 	INT8				bUIInterfaceLevel;
 
-	UINT8			ubProfile;
+	ProfileID	ubProfile;
 	UINT8			ubQuoteRecord;
 	UINT8			ubQuoteActionID;
 	UINT8			ubBattleSoundID;

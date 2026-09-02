@@ -322,8 +322,8 @@ void RenderMercCompareCustomers( )
 ////////////////////////// MERC COMPARE CUSTOMERS ////////////////////////////////
 
 ////////////////////////// MERC COMPARE ANALYZE ////////////////////////////////
-UINT8 gMercCompareProfile1 = NO_PROFILE;
-UINT8 gMercCompareProfile2 = NO_PROFILE;
+UINT8 gMercCompareProfile1 = NO_PROFILE_U8;
+UINT8 gMercCompareProfile2 = NO_PROFILE_U8;
 BOOLEAN fMercCompareRedraw = FALSE;
 
 #define MCA_DROPDOWN_X				(LAPTOP_SCREEN_UL_X + 60)
@@ -360,10 +360,10 @@ BOOLEAN EnterMercCompareAnalyze()
 	// if a profile was already set, use it
 	if ( DropDownTemplate<DROPDOWNNR_MERCCOMPARE_SQUADSELECTION>::getInstance().HasEntries() )
 	{
-		if ( gMercCompareProfile1 != NO_PROFILE )
+		if ( gMercCompareProfile1 != NO_PROFILE_U8 )
 			DropDownTemplate<DROPDOWNNR_MERCCOMPARE1>::getInstance( ).SetSelectedEntryKey( gMercCompareProfile1 );
 
-		if ( gMercCompareProfile2 != NO_PROFILE )
+		if ( gMercCompareProfile2 != NO_PROFILE_U8 )
 			DropDownTemplate<DROPDOWNNR_MERCCOMPARE2>::getInstance( ).SetSelectedEntryKey( gMercCompareProfile2 );
 	}
 

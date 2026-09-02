@@ -5406,7 +5406,7 @@ void RandomizeMercProfile()
 	if	( GetSoldier( &pSoldier, gusSelectedSoldier ) )
 	{
 		// Change guy!
-		ForceSoldierProfileID( pSoldier, (UINT8)Random( 30 ) );
+		ForceSoldierProfileID( pSoldier, Random( 30 ) );
 
 		// Dirty interface
 		DirtyMercPanelInterface( pSoldier, DIRTYLEVEL2 );

@@ -2387,7 +2387,7 @@ BOOLEAN AddCorpseFromObject(OBJECTTYPE* pObj, INT32 sGridNo, INT8 bLevel )
 
 	Corpse.bVisible = 1;
 	Corpse.bNumServicingCrows = 0;
-	Corpse.ubProfile = NO_PROFILE;
+	Corpse.ubProfile = NO_PROFILE_U8;
 	Corpse.fHeadTaken = FALSE;
 	Corpse.ubAIWarningValue = 20;
 
@@ -2819,7 +2819,7 @@ void RaiseZombies( void )
 				SetMusicMode( MUSIC_TACTICAL_ENEMYPRESENT );
 
 				// Flugente: additional dialogue
-				AdditionalTacticalCharacterDialogue_AllInSector( gWorldSectorX, gWorldSectorY, gbWorldSectorZ, NO_PROFILE, ADE_ZOMBIESRISE );
+				AdditionalTacticalCharacterDialogue_AllInSector( gWorldSectorX, gWorldSectorY, gbWorldSectorZ, NO_PROFILE_U8, ADE_ZOMBIESRISE );
 
 				// alert the creatures
 				HandleInitialRedAlert( CREATURE_TEAM, FALSE );

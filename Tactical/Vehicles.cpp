@@ -1,4 +1,5 @@
 	#include "Vehicles.h"
+	#include "GameVersion.h"
 	#include "Strategic Pathing.h"
 	#include "Assignments.h"
 	#include "Strategic Movement.h"
@@ -217,7 +218,7 @@ void SetVehicleValuesIntoSoldierType( SOLDIERTYPE *pVehicle )
 	//wcscpy( pVehicle->name, gNewVehicle[ pVehicleList[ pVehicle->bVehicleID ].ubVehicleType ].NewVehicleName );
 	wcsncpy( pVehicle->name, gNewVehicle[pVehicleList[pVehicle->bVehicleID].ubVehicleType].NewVehicleName, (sizeof(pVehicle->name) / sizeof(pVehicle->name[0]) - 1) );
 
-	pVehicle->ubProfile = pVehicleList[ pVehicle->bVehicleID ].ubProfileID;
+	pVehicle->ubProfile = static_cast<UINT16>(pVehicleList[ pVehicle->bVehicleID ].ubProfileID); // TODO(Phase 4): vehicle ubProfileID is still UINT8 (Vehicles.h, saved vehicle data) - widen alongside the save format
 
 	// Init fuel!
 	pVehicle->sBreathRed = 10000;
@@ -309,7 +310,7 @@ INT32 AddVehicleToList( INT16 sMapX, INT16 sMapY, INT32 sGridNo, UINT8 ubType )
 	pVehicleList[ iCount ].fDestroyed = FALSE;
 	pVehicleList[ iCount ].iMoveSound			= gNewVehicle[ ubType ].iNewMoveVehicleSndID;
 	pVehicleList[ iCount ].iOutOfSound			= gNewVehicle[ ubType ].iNewEnterVehicleSndID;
-	pVehicleList[ iCount ].ubProfileID			= ubType; //gNewVehicle[ ubType ].ubNewVehicleTypeProfileID;//gNewVehicle[ ubType ].uiIndex;  //gNewVehicle[ ubType ].ubNewVehicleTypeProfileID;  //
+	pVehicleList[ iCount ].ubProfileID			= static_cast<int>(ubType); //gNewVehicle[ ubType ].ubNewVehicleTypeProfileID;//gNewVehicle[ ubType ].uiIndex;  //gNewVehicle[ ubType ].ubNewVehicleTypeProfileID;  // Phase 6: explicit cast, ProfileID has no implicit UINT8 constructor by design
 	pVehicleList[ iCount ].ubMovementGroup	= gubVehicleMovementGroups[ iCount ];
 	pVehicleList[ iCount ].ubDriver = NOBODY;
 
@@ -2310,7 +2311,7 @@ BOOLEAN SaveVehicleInformationToSaveGameFile( HWFILE hFile )
 					// ! This means that the pointer contains a bogus pointer, but a real ID for the soldier.
 					// ! When reloading, this bogus pointer is converted to a byte to contain the id of the soldier so
 					// ! we can get the REAL pointer to the soldier
-					TempVehicle.pPassengers[ ubPassengerCnt ] = ( SOLDIERTYPE * ) pVehicleList[cnt].pPassengers[ ubPassengerCnt ]->ubProfile;
+					TempVehicle.pPassengers[ ubPassengerCnt ] = ( SOLDIERTYPE * )(UINT_PTR)(UINT16) pVehicleList[cnt].pPassengers[ ubPassengerCnt ]->ubProfile; // ProfileID has no direct pointer cast; go through its UINT16 conversion first, same bit-packing trick as before
 				}
 			}
 
@@ -2398,10 +2399,29 @@ BOOLEAN LoadVehicleInformationFromSavedGameFile( HWFILE hFile, UINT32 uiSavedGam
 			if( pVehicleList[cnt].fValid )
 			{
 				//load the vehicle info
-				FileRead( hFile, &pVehicleList[cnt], sizeof( VEHICLETYPE ), &uiNumBytesRead );
-				if( uiNumBytesRead != sizeof( VEHICLETYPE ) )
+				// Phase 6: before PHASE6_PROFILE_FIELDS_WIDEN, ubProfileID was UINT8 and
+				// everything is raw-blob written/read - reading directly into the current
+				// (wider) VEHICLETYPE would misread fValid's now-shifted position for old saves.
+				if ( uiSavedGameVersion < PHASE6_PROFILE_FIELDS_WIDEN )
 				{
-					return( FALSE );
+					_OLD_VEHICLETYPE_PHASE6 OldVehicle;
+					FileRead( hFile, &OldVehicle, sizeof( _OLD_VEHICLETYPE_PHASE6 ), &uiNumBytesRead );
+					if ( uiNumBytesRead != sizeof( _OLD_VEHICLETYPE_PHASE6 ) )
+					{
+						return( FALSE );
+					}
+					BOOLEAN fValidBackup = pVehicleList[cnt].fValid; // already correctly set from the standalone read above
+					memcpy( &pVehicleList[cnt], &OldVehicle, offsetof( _OLD_VEHICLETYPE_PHASE6, ubProfileID ) );
+					pVehicleList[cnt].ubProfileID = static_cast<int>(OldVehicle.ubProfileID);
+					pVehicleList[cnt].fValid = fValidBackup;
+				}
+				else
+				{
+					FileRead( hFile, &pVehicleList[cnt], sizeof( VEHICLETYPE ), &uiNumBytesRead );
+					if ( uiNumBytesRead != sizeof( VEHICLETYPE ) )
+					{
+						return( FALSE );
+					}
 				}
 
 				//
@@ -2497,8 +2517,10 @@ BOOLEAN LoadVehicleInformationFromSavedGameFile( HWFILE hFile, UINT32 uiSavedGam
 			}
 
 			// WANNE: This should make savegames before the externalized vehicles compatible.
-			if (pVehicleList[cnt].ubVehicleType != pVehicleList[cnt].ubProfileID)
-				pVehicleList[cnt].ubVehicleType = pVehicleList[cnt].ubProfileID;
+			// Phase 6: ubProfileID is now ProfileID; ubVehicleType stays its own UINT8 type index
+			// (out of scope here), so compare/assign through an explicit int cast.
+			if (pVehicleList[cnt].ubVehicleType != static_cast<int>(pVehicleList[cnt].ubProfileID))
+				pVehicleList[cnt].ubVehicleType = static_cast<UINT8>(pVehicleList[cnt].ubProfileID);
 			
 		}
 	}
@@ -2718,11 +2740,11 @@ BOOLEAN OKUseVehicle( UINT8 ubProfile )
 {
 	if ( ubProfile == PROF_HUMMER )
 	{
-		return( CheckFact( FACT_OK_USE_HUMMER, NO_PROFILE ) );
+		return( CheckFact( FACT_OK_USE_HUMMER, NO_PROFILE_U8 ) );
 	}
 	else if ( ubProfile == PROF_ICECREAM )
 	{
-		return( CheckFact( FACT_OK_USE_ICECREAM, NO_PROFILE ) );
+		return( CheckFact( FACT_OK_USE_ICECREAM, NO_PROFILE_U8 ) );
 	}
 	else if ( ubProfile == PROF_HELICOPTER )
 	{

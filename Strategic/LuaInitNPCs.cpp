@@ -3878,7 +3878,7 @@ static int l_ProfilesStrategicInsertionData(lua_State* L)
 		UINT8 ProfilID = lua_tointeger(L, 1);
 		INT32 sGridNo = lua_tointeger(L, 2);
 
-		if (ProfilID != NO_PROFILE)
+		if (ProfilID != NO_PROFILE_U8)
 		{
 			gMercProfiles[ProfilID].sGridNo = sGridNo;
 			gMercProfiles[ProfilID].fUseProfileInsertionInfo = TRUE;
@@ -8694,7 +8694,7 @@ static int l_FindSoldierByProfileID(lua_State* L)
 
 		for (ubLoop = 0, pSoldier = MercPtrs[0]; ubLoop < ubLoopLimit; ubLoop++, pSoldier++)
 		{
-			if (pSoldier->bActive && pSoldier->ubProfile == ubTargetNPC)
+			if (pSoldier->bActive && pSoldier->ubProfile == static_cast<int>(ubTargetNPC)) // TODO: ubTargetNPC param is still UINT8 (shared Lua-bridge signature) - widen it deliberately if NPCs above 255 need this
 			{
 				foundProfileID = pSoldier->ubProfile;
 				break;
@@ -8721,7 +8721,7 @@ static int l_FindSoldierByProfileIDBool(lua_State* L)
 
 		for (ubLoop = 0, pSoldier = MercPtrs[0]; ubLoop < ubLoopLimit; ubLoop++, pSoldier++)
 		{
-			if (pSoldier->bActive && pSoldier->ubProfile == ubTargetNPC)
+			if (pSoldier->bActive && pSoldier->ubProfile == static_cast<int>(ubTargetNPC)) // TODO: ubTargetNPC param is still UINT8 (shared Lua-bridge signature) - widen it deliberately if NPCs above 255 need this
 			{
 				ProfBool = TRUE;
 				break;
@@ -10071,7 +10071,10 @@ static int l_CheckFact(lua_State* L)
 		UINT8 ubProfileID = lua_tointeger(L, 2);
 
 		bool checkfact = false;
-		if (ubProfileID != NUM_PROFILES && CheckFact(fact, ubProfileID))
+		// Phase 6: this sentinel was written when NUM_PROFILES == 255; ubProfileID is UINT8 (this Lua-facing
+		// Facts API's own ceiling - a separate, broader migration, out of scope here), so its "no profile"
+		// sentinel is still 255 and must compare against the frozen NUM_PROFILES_v255, not the live constant.
+		if (ubProfileID != NUM_PROFILES_v255 && CheckFact(fact, ubProfileID))
 		{
 			checkfact = TRUE;
 		}

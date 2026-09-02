@@ -1400,7 +1400,7 @@ INT16 GetBreathPerAP( SOLDIERTYPE *pSoldier, UINT16 usAnimState )
 		sBreathPerAP = APBPConstants[BP_PER_AP_MIN_EFFORT];
 
 		// OK, check if we are in water and are waling/standing
-		if ( 0 && pSoldier->MercInWater( ) )
+		if constexpr ( false ) // disabled; was "if ( 0 && ... )" - literal-0 form trips C4127/C2220 under /WX
 		{
 			switch( usAnimState )
 			{

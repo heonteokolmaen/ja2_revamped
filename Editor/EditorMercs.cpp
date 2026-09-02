@@ -1727,7 +1727,7 @@ void IndicateSelectedMerc( INT16 sID )
 
 	//If the merc has a valid profile, then turn off editability
 	if( gpSelected->pDetailedPlacement )
-		SetMercEditability( (BOOLEAN)(gpSelected->pDetailedPlacement->ubProfile == NO_PROFILE) );
+		SetMercEditability( (BOOLEAN)(gpSelected->pDetailedPlacement->ubProfile == NO_PROFILE_U8) );
 	else
 		SetMercEditability( TRUE );
 
@@ -1809,7 +1809,7 @@ void SetupTextInputForMercProfile()
 	InitTextInputModeWithScheme( DEFAULT_SCHEME );
 	AddUserInputField(NULL);//dnl ch78 271113 to avoid automatic textbox selection and enable shortcut keys while not typing
 	sNum = gpSelected->pDetailedPlacement->ubProfile;
-	if( sNum == NO_PROFILE )
+	if( sNum == NO_PROFILE_U8 )
 		str[0] = '\0';
 	else
 		CalcStringForValue( str, gpSelected->pDetailedPlacement->ubProfile, NUM_PROFILES );
@@ -1912,7 +1912,7 @@ void ExtractAndUpdateMercAttributes()
 void ExtractAndUpdateMercProfile()
 {
 	INT16 sNum;
-	static INT16 sPrev = NO_PROFILE;
+	static INT16 sPrev = NO_PROFILE_U8;
 
 	//If we have just deleted the merc's detailed placement in the editor, we don't
 	//need to extract the information
@@ -1924,7 +1924,7 @@ void ExtractAndUpdateMercProfile()
 	sNum = (INT16)min(GetNumericStrictValueFromField(1), NUM_PROFILES-1);//dnl ch54 101009 //dnl ch78 271113
 	if( sNum == -1 )
 	{
-		gpSelected->pDetailedPlacement->ubProfile = NO_PROFILE;
+		gpSelected->pDetailedPlacement->ubProfile = NO_PROFILE_U8;
 		gpSelected->pDetailedPlacement->fCopyProfileItemsOver = FALSE;
 		SetMercEditability( TRUE );
 	}
@@ -2577,7 +2577,7 @@ void UpdateMercsInfo()
 			break;
 		case MERC_APPEARANCEMODE:
 			SetFont( FONT10ARIAL );
-			if( gpSelected->pDetailedPlacement->fVisible || gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE )
+			if( gpSelected->pDetailedPlacement->fVisible || gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE_U8 )
 				SetFontForeground( FONT_YELLOW );
 			else
 				SetFontForeground( FONT_DKYELLOW );
@@ -2590,7 +2590,7 @@ void UpdateMercsInfo()
 
 			SetFont( SMALLCOMPFONT );
 			SetFontForeground( FONT_BLACK );
-			if( gpSelected->pDetailedPlacement->fVisible || gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE )
+			if( gpSelected->pDetailedPlacement->fVisible || gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE_U8 )
 			{
 				mprintfEditor( iScreenWidthOffset + 396, 2 * iScreenHeightOffset + 374, L"%S	", gpSelected->pSoldier->HeadPal );
 				mprintfEditor( iScreenWidthOffset + 396, 2 * iScreenHeightOffset + 398, L"%S	", gpSelected->pSoldier->SkinPal );
@@ -2622,7 +2622,7 @@ void UpdateMercsInfo()
 					pUpdateMercsInfoText[36], NUM_PROFILES-1 );
 				DisplayWrappedString(iScreenWidthOffset + 180, 2 * iScreenHeightOffset + 370, 400, 2, FONT10ARIAL, 146, tempStr,	FONT_BLACK, FALSE, LEFT_JUSTIFIED );
 				SetFont( FONT12POINT1 );
-				if( gpSelected->pDetailedPlacement->ubProfile == NO_PROFILE )
+				if( gpSelected->pDetailedPlacement->ubProfile == NO_PROFILE_U8 )
 				{
 					SetFontForeground( FONT_GRAY3 );
 					mprintfEditor( iScreenWidthOffset + 240, 2 * iScreenHeightOffset + 435, pUpdateMercsInfoText[37]);
@@ -3061,7 +3061,7 @@ void UpdateMercItemSlots()
 	}
 	else
 	{
-		if( gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE )
+		if( gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE_U8 )
 		{
 			gpSelected->pDetailedPlacement->Inv = gpSelected->pSoldier->inv;
 		}
@@ -3102,7 +3102,7 @@ void SetDroppableCheckboxesBasedOnMercsInventory()
 
 void SetEnemyColorCode( UINT8 ubColorCode )
 {
-	if( gpSelected->pDetailedPlacement && gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE )
+	if( gpSelected->pDetailedPlacement && gpSelected->pDetailedPlacement->ubProfile != NO_PROFILE_U8 )
 		return;
 
 	UnclickEditorButtons( FIRST_MERCS_COLORCODE_BUTTON, LAST_MERCS_COLORCODE_BUTTON );

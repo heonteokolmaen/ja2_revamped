@@ -268,7 +268,7 @@ BOOLEAN AddPlayerToGroup( UINT8 ubGroupID, SOLDIERTYPE *pSoldier )
 		pSoldier->ubDesiredSquadAssignment = curr->pSoldier->ubDesiredSquadAssignment;
 		while( curr->next )
 		{
-			if( curr->ubProfileID == pSoldier->ubProfile )
+			if( curr->ubProfileID == pSoldier->ubProfile ) // Phase 6: ubProfileID widened to ProfileID
 				AssertMsg( 0, String( "Attempting to add an already existing merc to group (ubProfile=%d).", pSoldier->ubProfile ) );
 			curr = curr->next;
 		}
@@ -4340,7 +4340,7 @@ BOOLEAN LoadPlayerGroupList( HWFILE hFile, GROUP **pGroup )
 		}
 
 		//Set up the current node
-		pTemp->ubProfileID = (UINT8)uiProfileID;
+		pTemp->ubProfileID = static_cast<int>(uiProfileID); // Phase 6: was (UINT8)-cast, artificially truncating a value already stored as full UINT32 on disk
 		sTempID = GetSoldierIDFromMercID( pTemp->ubProfileID );
 
 		//Should never happen

@@ -2996,7 +2996,7 @@ void AddNPCToGridNo( INT32 iGridNo )
 
 	GetCurrentWorldSector( &sSectorX, &sSectorY );
 	MercCreateStruct.bTeam				= CIV_TEAM;
-	MercCreateStruct.ubProfile		= (UINT8)gpActiveListBox->sCurSelectedItem;
+	MercCreateStruct.ubProfile		= gpActiveListBox->sCurSelectedItem; // Phase 5: was (UINT8)-cast, artificially capping this UI's selectable profile at 255
 	MercCreateStruct.sSectorX			= sSectorX;
 	MercCreateStruct.sSectorY			= sSectorY;
 	MercCreateStruct.bSectorZ			= gbWorldSectorZ;
@@ -3667,7 +3667,7 @@ SoldierID IsMercInTheSector( UINT8 ubMercProfileID )
 	for ( cnt=0; cnt < TOTAL_SOLDIERS; cnt++ )
 	{
 		//if the merc is active
-		if( Menptr[ cnt ].ubProfile == ubMercProfileID )
+		if( Menptr[ cnt ].ubProfile == static_cast<int>(ubMercProfileID) ) // TODO: ubMercProfileID param is still UINT8 (IsMercInTheSector signature) - widen deliberately if needed
 		{
 			if( Menptr[ cnt ].bActive )
 				return( Menptr[ cnt ].ubID );
@@ -3877,7 +3877,7 @@ void SetQDSMercProfile()
 	if	( GetSoldier( &gTalkingMercSoldier, gusSelectedSoldier ) )
 	{
 		// Change guy!
-		ForceSoldierProfileID( gTalkingMercSoldier, (UINT8)gNpcListBox.sCurSelectedItem );
+		ForceSoldierProfileID( gTalkingMercSoldier, gNpcListBox.sCurSelectedItem ); // Phase 5: was (UINT8)-cast, artificially capping this UI's selectable profile at 255
 
 		//if it is an rpc
 		if( gTalkingMercSoldier->ubProfile >= 57 && gTalkingMercSoldier->ubProfile <= 72 )

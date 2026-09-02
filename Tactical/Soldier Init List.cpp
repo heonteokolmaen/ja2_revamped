@@ -856,7 +856,7 @@ void AddPlacementToWorldByProfileID( UINT8 ubProfile )
 	curr = gSoldierInitHead;
 	while( curr )
 	{
-		if ( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == ubProfile && !curr->pSoldier )
+		if ( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == static_cast<int>(ubProfile) && !curr->pSoldier ) // TODO: ubProfile param is still UINT8 (AddPlacementToWorldByProfileID signature) - widen deliberately if needed
 		{
 			//Matching profile, so add this placement.
 			AddPlacementToWorld( curr );
@@ -2228,7 +2228,7 @@ SOLDIERINITNODE* FindSoldierInitNodeWithProfileID( UINT16 usProfile )
 	curr = gSoldierInitHead;
 	while( curr )
 	{
-		if( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == usProfile )
+		if( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == static_cast<int>(usProfile) )
 			return curr;
 		curr = curr->next;
 	}
@@ -2608,7 +2608,7 @@ SOLDIERINITNODE * FindSoldierInitListNodeByProfile( UINT8 ubProfile )
 
 	while( curr )
 	{
-		if ( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == ubProfile )
+		if ( curr->pDetailedPlacement && curr->pDetailedPlacement->ubProfile == static_cast<int>(ubProfile) ) // TODO: ubProfile param is still UINT8 (FindSoldierInitListNodeByProfile signature) - widen deliberately if needed
 		{
 			return( curr );
 		}
@@ -2657,7 +2657,7 @@ void AddProfilesUsingProfileInsertionData()
 			//Set up the create struct so that we can properly create the profile soldier.
 			MercCreateStruct.initialize();
 			MercCreateStruct.bTeam						= CIV_TEAM;
-			MercCreateStruct.ubProfile				= (UINT8)i;
+			MercCreateStruct.ubProfile				= i; // Phase 5: was (UINT8)-cast, artificially capping this at 255
 			MercCreateStruct.sSectorX					= gWorldSectorX;
 			MercCreateStruct.sSectorY					= gWorldSectorY;
 			MercCreateStruct.bSectorZ					= gbWorldSectorZ;

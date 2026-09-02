@@ -52,7 +52,7 @@ typedef struct WAYPOINT
 
 typedef struct PLAYERGROUP
 {
-	UINT8		ubProfileID;						//SAVE THIS VALUE ONLY.	The others are temp (for quick access)
+	ProfileID	ubProfileID;						//SAVE THIS VALUE ONLY.	The others are temp (for quick access) - saved/loaded as a full UINT32 already (Strategic Movement.cpp), so this widen carries zero save-format risk
 	SoldierID	ubID;										//index in the Menptr array
 	SOLDIERTYPE *pSoldier;				//direct access to the soldier pointer
 	UINT8		bFlags;									//flags referring to individual player soldiers

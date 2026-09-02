@@ -1608,7 +1608,7 @@ void SetUpHelicopterForPlayer( INT16 sX, INT16 sY , UINT8 SkyDrive, UINT8 Vehicl
 		Assert( iHelicopterVehicleId != -1 );
 
 		SoldierSkyRider.initialize();
-		SoldierSkyRider.ubProfile = SkyDrive; //SKYRIDER;
+		SoldierSkyRider.ubProfile = static_cast<UINT16>(SkyDrive); //SKYRIDER; TODO: SkyDrive param is still UINT8 (SetUpHelicopterForPlayer signature) - widen deliberately if needed
 		SoldierSkyRider.stats.bLife = 80;
 
 		pSkyRider = &( SoldierSkyRider );

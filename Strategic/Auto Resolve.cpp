@@ -3730,7 +3730,7 @@ void RenderSoldierCellHealth( SOLDIERCELL *pCell )
 	mprintf( xp, yp, pStr );
 }
 
-static UINT8 GetUnusedMercProfileID()
+static ProfileID GetUnusedMercProfileID()
 {
 	UINT8 ubRandom=0;
 	INT32 i;
@@ -3741,14 +3741,14 @@ static UINT8 GetUnusedMercProfileID()
 		for( i = 0; i < 19; i++ )
 		{
 			fUnique = TRUE;
-			if( Menptr[ i ].ubProfile == ubRandom )
+			if( Menptr[ i ].ubProfile == static_cast<int>(ubRandom) )
 			{
 				fUnique = FALSE;
 				break;
 			}
 		}
 	}
-	return ubRandom;
+	return static_cast<int>(ubRandom);
 }
 
 void CreateTempPlayerMerc()

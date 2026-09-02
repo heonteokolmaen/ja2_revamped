@@ -190,7 +190,7 @@ namespace MiniEventHelpers
 
 	static int l_AddSkill(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const INT8 skillId = static_cast<INT8>(lua_tointeger(LS, 2));
 
 		std::for_each(gAllMercs.begin(), gAllMercs.end(), [profileId, skillId](SOLDIERTYPE* merc) {
@@ -237,7 +237,7 @@ namespace MiniEventHelpers
 
 	static int l_AdjustBreathMax(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const int val = lua_tointeger(LS, 2);
 
 		if (val == 0)
@@ -284,7 +284,7 @@ namespace MiniEventHelpers
 
 	static int l_AdjustMorale(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));;
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));;
 		const INT8 val = static_cast<INT8>(lua_tointeger(LS, 2));
 
 		if (val == 0)
@@ -305,7 +305,7 @@ namespace MiniEventHelpers
 
 	static int l_AdjustStat(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));;
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));;
 		const UINT16 stat = lua_tointeger(LS, 2);
 		const INT16 val = lua_tointeger(LS, 3);
 
@@ -513,7 +513,7 @@ namespace MiniEventHelpers
 
 	static int l_AdjustVehicleFuel(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));;
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));;
 		const INT16 val = lua_tointeger(LS, 2);
 		INT32 vehicleId = -1;
 		
@@ -562,7 +562,7 @@ namespace MiniEventHelpers
 
 	static int l_AdjustVehicleHealth(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));;
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));;
 		const INT16 val = lua_tointeger(LS, 2);
 		INT32 vehicleId = -1;
 		
@@ -614,7 +614,7 @@ namespace MiniEventHelpers
 	{
 		// note that we're intentionally NOT incrementing the damaged stat array (ubCriticalStatDamage) as we do not want these penalties to be doctorable!
 
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const UINT16 stat = static_cast<UINT16>(lua_tointeger(LS, 2));
 		const int amount = lua_tointeger(LS, 3);
 
@@ -819,7 +819,7 @@ namespace MiniEventHelpers
 
 	static int l_ApplyDamage(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const int amount = lua_tointeger(LS, 2);
 
 		std::for_each(gAllMercs.begin(), gAllMercs.end(), [profileId, amount](SOLDIERTYPE* merc) {
@@ -909,7 +909,7 @@ namespace MiniEventHelpers
 		INT16 sectorX = 0;
 		INT16 sectorY = 0;
 		INT8 sectorZ = 0;
-		INT8 profileId = 0;
+		ProfileID profileId;
 		bool globalSearch = true;
 		bool searchAllMercs = true;
 
@@ -924,7 +924,7 @@ namespace MiniEventHelpers
 		if (lua_gettop(LS) == 2)
 		{
 			searchAllMercs = false;
-			profileId = static_cast<UINT8>(lua_tointeger(LS, 2));
+			profileId = static_cast<UINT16>(lua_tointeger(LS, 2));
 		}
 
 		std::vector<SOLDIERTYPE*> foundMercs;
@@ -973,7 +973,7 @@ namespace MiniEventHelpers
 
 	static int l_CheckForSleep(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -990,7 +990,7 @@ namespace MiniEventHelpers
 
 	static int l_CheckForTravel(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -1007,7 +1007,7 @@ namespace MiniEventHelpers
 
 	static int l_CheckForTravelOnFoot(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -1024,7 +1024,7 @@ namespace MiniEventHelpers
 
 	static int l_CheckForTravelInHelicopter(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -1079,7 +1079,7 @@ namespace MiniEventHelpers
 
 	static int l_GetCoordinates(lua_State* LS)
 	{
-		const UINT8 profileId = lua_tointeger(LS, 1);
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		INT16 x = 0;
 		INT16 y = 0;
@@ -1105,7 +1105,7 @@ namespace MiniEventHelpers
 
 	static int l_GetHealth(lua_State* LS)
 	{
-		const UINT8 profileId = lua_tointeger(LS, 1);
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -1124,7 +1124,7 @@ namespace MiniEventHelpers
 
 	static int l_GetHoursRemainingOnMiniEvent(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
 		{
@@ -1155,7 +1155,7 @@ namespace MiniEventHelpers
 
 	static int l_GetSkills(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 
 		lua_newtable(LS);
 		for (auto iter = gAllMercs.begin(); iter != gAllMercs.end(); ++iter)
@@ -1189,7 +1189,7 @@ namespace MiniEventHelpers
 		INT16 sectorX = 0;
 		INT16 sectorY = 0;
 		INT8 sectorZ = 0;
-		UINT8 profileId = 0;
+		ProfileID profileId;
 		bool globalSearch = true;
 		bool lookAtAllMercs = true;
 
@@ -1204,7 +1204,7 @@ namespace MiniEventHelpers
 		if (lua_gettop(LS) == 2)
 		{
 			lookAtAllMercs = false;
-			profileId = static_cast<UINT8>(lua_tointeger(LS, 2));
+			profileId = static_cast<UINT16>(lua_tointeger(LS, 2));
 		}
 
 		INT8 bestStat = 0;
@@ -1329,7 +1329,7 @@ namespace MiniEventHelpers
 
 	static int l_SendMercOnMiniEvent(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const UINT16 hoursOnMiniEvent = static_cast<UINT16>(lua_tointeger(LS, 2));
 
 		if (hoursOnMiniEvent == 0)
@@ -1401,7 +1401,7 @@ namespace MiniEventHelpers
 
 	static int l_SetMercCoordinates(lua_State* LS)
 	{
-		const UINT8 profileId = static_cast<UINT8>(lua_tointeger(LS, 1));
+		const ProfileID profileId = static_cast<UINT16>(lua_tointeger(LS, 1));
 		const INT16 sectorX = lua_tointeger(LS, 2);
 		const INT16 sectorY = lua_tointeger(LS, 3);
 		const INT8 sectorZ = lua_tointeger(LS, 4);

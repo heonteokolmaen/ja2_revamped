@@ -1988,7 +1988,7 @@ INT8 SearchForItems( SOLDIERTYPE * pSoldier, INT8 bReason, UINT16 usItem )
 							if ( pItem->usItemClass == IC_GUN && (*pObj)[0]->data.objectStatus >= MINIMUM_REQUIRED_STATUS )
 							{
 								// maybe this gun has ammo (adjust for whether it is better than ours!)
-								if ( (*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && (*pObj)[0]->data.ubImprintID != pSoldier->ubProfile) )
+								if ( (*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && static_cast<int>((*pObj)[0]->data.ubImprintID) != pSoldier->ubProfile) /* TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed */ )
 								{
 									iTempValue = 0;
 								}
@@ -2029,7 +2029,7 @@ INT8 SearchForItems( SOLDIERTYPE * pSoldier, INT8 bReason, UINT16 usItem )
 							if (pItem->usItemClass & IC_WEAPON && (*pObj)[0]->data.objectStatus >= MINIMUM_REQUIRED_STATUS )
 							{
 								DebugAI(AI_MSG_INFO, pSoldier, String("weapon has good status"));
-								if ( (pItem->usItemClass & IC_GUN) && ((*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && (*pObj)[0]->data.ubImprintID != pSoldier->ubProfile) ) )
+								if ( (pItem->usItemClass & IC_GUN) && ((*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && static_cast<int>((*pObj)[0]->data.ubImprintID) != pSoldier->ubProfile) /* TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed */ ) )
 								{
 									// jammed or out of ammo, skip it!
 									DebugAI(AI_MSG_INFO, pSoldier, String("jammed or out of ammo, skip it!"));
@@ -2080,7 +2080,7 @@ INT8 SearchForItems( SOLDIERTYPE * pSoldier, INT8 bReason, UINT16 usItem )
 							if ( pItem->usItemClass & IC_WEAPON && (*pObj)[0]->data.objectStatus >= MINIMUM_REQUIRED_STATUS )
 							{
 								DebugAI(AI_MSG_INFO, pSoldier, String("gun has good status"));
-								if ( (pItem->usItemClass & IC_GUN) && ((*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && (*pObj)[0]->data.ubImprintID != pSoldier->ubProfile) ) )
+								if ( (pItem->usItemClass & IC_GUN) && ((*pObj)[0]->data.gun.bGunAmmoStatus < 0 || (*pObj)[0]->data.gun.ubGunShotsLeft == 0 || (ItemHasFingerPrintID(pObj->usItem) && (*pObj)[0]->data.ubImprintID != NO_PROFILE && static_cast<int>((*pObj)[0]->data.ubImprintID) != pSoldier->ubProfile) /* TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed */ ) )
 								{
 									// jammed or out of ammo, skip it!
 									DebugAI(AI_MSG_INFO, pSoldier, String("jammed or out of ammo, skip it!"));

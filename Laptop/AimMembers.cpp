@@ -3163,7 +3163,7 @@ UINT8 WillMercAcceptCall()
 
 BOOLEAN CanMercBeHired()
 {
-	UINT8	bMercID;
+	ProfileID	bMercID;	// Phase 6: widened UINT8 -> ProfileID
 	BOOLEAN fRetVal = FALSE;
 	BOOLEAN	fBuddyOnTeam=FALSE;
 	
@@ -3196,17 +3196,18 @@ BOOLEAN CanMercBeHired()
 				continue;
 		}
 
-		if( bMercID < 0 )
+		// Phase 6: sentinel fixed to compare against the frozen 255 cap, not the live (now 2048) NUM_PROFILES
+		if( bMercID == NUM_PROFILES_v255 )
 			continue;
 
 		//if the hated merc is dead
-		if( IsMercDead( bMercID ) )
+		if( IsMercDead( static_cast<UINT8>(bMercID) ) )	// Phase 6: IsMercDead itself is a separate, wider migration - out of scope here
 		{
 			//ignore the merc
 			continue;
 		}
 
-		if( IsMercOnTeam( bMercID, FALSE, FALSE ) )
+		if( IsMercOnTeam( static_cast<UINT8>(bMercID), FALSE, FALSE ) )	// Phase 6: IsMercOnTeam itself is a separate, wider migration - out of scope here
 		{
 			//if the merc hates someone on the team, see if a buddy is on the team
 			for ( UINT8 j = 0; j< NUMBER_HATED_MERCS_ONTEAM; ++j )
@@ -3225,10 +3226,11 @@ BOOLEAN CanMercBeHired()
 						continue;
 				}
 
-				if( bMercID < 0 )
+				// Phase 6: sentinel fixed to compare against the frozen 255 cap, not the live (now 2048) NUM_PROFILES
+				if( bMercID == NUM_PROFILES_v255 )
 					continue;
 
-				if( IsMercOnTeam( bMercID, FALSE, FALSE ) && !IsMercDead( bMercID ) )
+				if( IsMercOnTeam( static_cast<UINT8>(bMercID), FALSE, FALSE ) && !IsMercDead( static_cast<UINT8>(bMercID) ) )	// Phase 6: both functions are separate, wider migrations - out of scope here
 				{
 					if ( j == 0 )
 					{
@@ -5612,7 +5614,7 @@ void RefreshWeaponKitSelectionButtons()
 	{
 		STR16 kitlabel = CharacterInfo[AIM_MEMBER_GEAR_KIT_ONE + i];
 
-		if ( gbCurrentSoldier != NO_PROFILE )
+		if ( gbCurrentSoldier != NO_PROFILE_U8 )
 		{
 			if ( gMercProfileGear[gbCurrentSoldier][i].mGearKitName[0] != '\0' )
 				kitlabel = gMercProfileGear[gbCurrentSoldier][i].mGearKitName;

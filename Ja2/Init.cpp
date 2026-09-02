@@ -1320,7 +1320,7 @@ if( g_lang != i18n::Lang::en ) {
 }
 
 	// Old AIM Archive
-		UINT8 p;
+		UINT16 p;
 		for(p=0; p<NUM_PROFILES; p++)
 		{
 			gAimOldArchives[p].FaceID = -1;

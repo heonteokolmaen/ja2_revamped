@@ -499,7 +499,7 @@ BOOLEAN ExecuteStrategicEvent( STRATEGICEVENT *pEvent )
 #else
 		case EVENT_KINGPIN_BOUNTY_INITIAL:
 			// if Kingpin, Angel and Maria are still alive, we can start the quest
-			if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE ) && 
+			if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE_U8 ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE_U8 ) &&
 				 gMercProfiles[MARIA].bMercStatus != MERC_IS_DEAD && gMercProfiles[ANGEL].bMercStatus != MERC_IS_DEAD )
 			{
 				StartQuest( QUEST_KINGPIN_ANGEL_MARIA, gWorldSectorX, gWorldSectorY );
@@ -508,7 +508,7 @@ BOOLEAN ExecuteStrategicEvent( STRATEGICEVENT *pEvent )
 			break;
 
 		case EVENT_KINGPIN_BOUNTY_END_KILLEDTHEM:
-			if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE ) )
+			if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE_U8 ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE_U8 ) )
 			{
 				AddEmail(KINGPIN_BOUNTY_KINGPIN_REWARD, KINGPIN_BOUNTY_KINGPIN_REWARD_LENGTH, KING_PIN, GetWorldTotalMin(), -1, -1, TYPE_EMAIL_EMAIL_EDT, XML_KINGPIN_WELLDONE);
 				// also authorise payment from kingpin to the player
@@ -524,13 +524,13 @@ BOOLEAN ExecuteStrategicEvent( STRATEGICEVENT *pEvent )
 
 			// if we eliminated all bounty hunters and Angel & Maria are still alive, they send us an email
 			if ( gMercProfiles[MARIA].bMercStatus != MERC_IS_DEAD && gMercProfiles[ANGEL].bMercStatus != MERC_IS_DEAD
-				 && CheckFact( FACT_BOUNTYHUNTER_KILLED_1, NO_PROFILE ) && CheckFact( FACT_BOUNTYHUNTER_KILLED_2, NO_PROFILE ) )
+				 && CheckFact( FACT_BOUNTYHUNTER_KILLED_1, NO_PROFILE_U8 ) && CheckFact( FACT_BOUNTYHUNTER_KILLED_2, NO_PROFILE_U8 ) )
 			{
 				AddEmail(KINGPIN_BOUNTY_ANGEL_THANKS, KINGPIN_BOUNTY_ANGEL_THANKS_LENGTH, ANGEL_DASILVA, GetWorldTotalMin(), -1, -1, TYPE_EMAIL_EMAIL_EDT, XML_DASILVA_THANKYOU);
 				AddEmail(KINGPIN_BOUNTY_TARGET_GOTAWAY, KINGPIN_BOUNTY_TARGET_GOTAWAY_LENGTH, KING_PIN, GetWorldTotalMin(), -1, -1, TYPE_EMAIL_EMAIL_EDT, XML_KINGPIN_FAILUREOBSTACLES);
 			}
 			// we can assume that the bounty hunters for to them first - Kingpin sends an email and states that someone else finished the job
-			else if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE ) )
+			else if ( gMercProfiles[KINGPIN].bMercStatus != MERC_IS_DEAD && !CheckFact( FACT_KINGPIN_DEAD, NO_PROFILE_U8 ) && !CheckFact( FACT_KINGPIN_IS_ENEMY, NO_PROFILE_U8 ) )
 			{
 				AddEmail(KINGPIN_BOUNTY_BH_GOTTARGET, KINGPIN_BOUNTY_BH_GOTTARGET_LENGTH, KING_PIN, GetWorldTotalMin(), -1, -1, TYPE_EMAIL_EMAIL_EDT, XML_KINGPIN_FAILURE);
 			}

@@ -1426,7 +1426,7 @@ void InternalEndQuest( UINT8 ubQuest, INT16 sSectorX, INT16 sSectorY, BOOLEAN fU
 				break;
 			case QUEST_DELIVER_LETTER :
 			case QUEST_LEATHER_SHOP_DREAM :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 3, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 3, NO_PROFILE_U8 );
 				break;
 			case QUEST_ESCORT_SKYRIDER :
 			case QUEST_CHOPPER_PILOT :
@@ -1435,7 +1435,7 @@ void InternalEndQuest( UINT8 ubQuest, INT16 sSectorX, INT16 sSectorY, BOOLEAN fU
 			case QUEST_FIND_SCIENTIST :
 			case QUEST_DELIVER_VIDEO_CAMERA :
 			case QUEST_FIND_HERMIT :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 4, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 4, NO_PROFILE_U8 );
 				break;
 			case QUEST_FREE_DYNAMO :
 				// don't give Dynamo reward for himself
@@ -1448,34 +1448,34 @@ void InternalEndQuest( UINT8 ubQuest, INT16 sSectorX, INT16 sSectorY, BOOLEAN fU
 			case QUEST_HELD_IN_TIXA :
 			case QUEST_RUNAWAY_JOEY :
 			case QUEST_ESCORT_TOURISTS :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 5, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 5, NO_PROFILE_U8 );
 				break;
 			case QUEST_ARMY_FARM :
 			case QUEST_KINGPIN_MONEY :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 6, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 6, NO_PROFILE_U8 );
 				break;
 			case QUEST_BLOODCATS :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 7, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 7, NO_PROFILE_U8 );
 				break;
 			case QUEST_INTERROGATION : // we get here only if wiped out enemies after interrogation
 			case QUEST_CREATURES :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 8, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 8, NO_PROFILE_U8 );
 				break;
 			case QUEST_KILL_TERRORISTS :  // only reduced experiences if we chosen Slay over Carmen
 				if( gMercProfiles[ CARMEN ].bMercStatus == MERC_IS_DEAD )
-					GiveQuestRewardPoint( sSectorX, sSectorY, 5, NO_PROFILE );
+					GiveQuestRewardPoint( sSectorX, sSectorY, 5, NO_PROFILE_U8 );
 				else
-					GiveQuestRewardPoint( sSectorX, sSectorY, 9, NO_PROFILE );
+					GiveQuestRewardPoint( sSectorX, sSectorY, 9, NO_PROFILE_U8 );
 				break;
 #ifdef JA2UB
 //off
 #else
 			case QUEST_KILL_DEIDRANNA :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 25, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 25, NO_PROFILE_U8 );
 				break;
 #endif
 			default :
-				GiveQuestRewardPoint( sSectorX, sSectorY, 4, NO_PROFILE );
+				GiveQuestRewardPoint( sSectorX, sSectorY, 4, NO_PROFILE_U8 );
 				break;
 		}
 	}
@@ -1717,7 +1717,7 @@ void GiveQuestRewardPoint( INT16 sQuestSectorX, INT16 sQuestsSectorY, INT8 bExpR
 			pSoldier->sSectorX == sQuestSectorX && pSoldier->sSectorY == sQuestsSectorY && !pSoldier->flags.fBetweenSectors && pSoldier->bTeam == gbPlayerNum &&
 			pSoldier->bAssignment != IN_TRANSIT && pSoldier->bAssignment != ASSIGNMENT_DEAD && gMercProfiles[ pSoldier->ubProfile ].ubBodyType != 21 ) // != ROBOTNOWEAPON )
 		{
-			if ( pSoldier->ubProfile != bException )
+			if ( pSoldier->ubProfile != static_cast<int>(bException) ) // TODO: bException param is still UINT8 (GiveQuestRewardPoint signature) - widen deliberately if needed
 			{
 				gMercProfiles[ pSoldier->ubProfile ].records.ubQuestsHandled++;
 
@@ -1798,7 +1798,7 @@ void HandlePOWQuestState(PowQuestState state, Quests quest, INT16 mapX, INT16 ma
 				// Finish quest, although not give points here...
 				InternalEndQuest(quest, mapX, mapY, FALSE);
 				// ... give them manually, but halved
-				GiveQuestRewardPoint(mapX, mapY, 4, NO_PROFILE);
+				GiveQuestRewardPoint(mapX, mapY, 4, NO_PROFILE_U8);
 				// Also let us know we finished the quest
 				ResetHistoryFact(quest, mapX, mapY);
 			}

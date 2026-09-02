@@ -653,7 +653,7 @@ void HandleDialogue( )
 
 			gpCurrentTalkingFace = NULL;
 			gubCurrentTalkingID	= NO_PROFILE;
-			gTacticalStatus.ubLastQuoteProfileNUm = NO_PROFILE;
+			gTacticalStatus.ubLastQuoteProfileNUm = NO_PROFILE_U8;
 			fDoneTalking = TRUE;
 		}
 	}
@@ -1595,7 +1595,7 @@ BOOLEAN TacticalCharacterDialogue( SOLDIERTYPE *pSoldier, UINT16 usQuoteNum )
 		return( FALSE );
 
 	// OK, let's check if this is the exact one we just played, if so, skip.
-	if ( pSoldier->ubProfile == gTacticalStatus.ubLastQuoteProfileNUm &&
+	if ( pSoldier->ubProfile == static_cast<int>(gTacticalStatus.ubLastQuoteProfileNUm) && // TODO: ubLastQuoteProfileNUm is still UINT8 (Overhead.h) - widen deliberately if needed
 			usQuoteNum == gTacticalStatus.ubLastQuoteSaid )
 	{
 		return( FALSE );
@@ -1776,7 +1776,7 @@ void AdditionalTacticalCharacterDialogue_AllInSector(INT16 aSectorX, INT16 aSect
 	{
 		pSoldier = cnt;
 		if ( pSoldier->stats.bLife >= OKLIFE && pSoldier->bActive &&
-			pSoldier->ubProfile != ausIgnoreProfile &&
+			pSoldier->ubProfile != static_cast<int>(ausIgnoreProfile) && // TODO: ausIgnoreProfile param is still UINT8 - widen deliberately if needed
 			pSoldier->sSectorX == aSectorX && pSoldier->sSectorY == aSectorY && pSoldier->bSectorZ == aSectorZ &&
 			pSoldier->bAssignment != ASSIGNMENT_POW && pSoldier->bAssignment != IN_TRANSIT && pSoldier->bAssignment != ASSIGNMENT_MINIEVENT && pSoldier->bAssignment != ASSIGNMENT_REBELCOMMAND &&
 			(aAroundGridno == NOWHERE || PythSpacesAway( pSoldier->sGridNo, aAroundGridno ) <= aRadius ) &&
@@ -2116,7 +2116,7 @@ BOOLEAN ExecuteCharacterDialogue( UINT8 ubCharacterNum, UINT16 usQuoteNum, INT32
 
 	// Flugente: if this an NPC merchant we don't say anything normally. So instead we call lua so that modders can add dislogue of their own
 	if ( bUIHandlerID == DIALOGUE_SHOPKEEPER_UI
-		&& ubCharacterNum == NO_PROFILE
+		&& ubCharacterNum == NO_PROFILE_U8
 		&& iFaceIndex == -1
 		&& gusIDOfCivTrader != NOBODY )
 	{

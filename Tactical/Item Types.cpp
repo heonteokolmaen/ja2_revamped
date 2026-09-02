@@ -1611,7 +1611,7 @@ OBJECTTYPE& OBJECTTYPE::operator=(const OLD_OBJECTTYPE_101& src)
 				// Flugente: if we resolved a random item, we have to give it ammo...
 				if ( Item[newitemfromrandom].usItemClass == IC_GUN )
 				{
-					(*this)[0]->data.ubImprintID = NO_PROFILE;
+					(*this)[0]->data.ubImprintID = NO_PROFILE_U8;
 
 					if (Weapon[ this->usItem ].ubWeaponClass == MONSTERCLASS)
 					{

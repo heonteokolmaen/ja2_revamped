@@ -1706,27 +1706,30 @@ BOOLEAN WriteMercProfiles()
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////
 
-			FilePrintf(hFile,"\t\t<bBuddy1>%d</bBuddy1>\r\n", gMercProfiles[ cnt ].bBuddy[0]);
-			FilePrintf(hFile,"\t\t<bBuddy2>%d</bBuddy2>\r\n", gMercProfiles[ cnt ].bBuddy[1]);
-			FilePrintf(hFile,"\t\t<bBuddy3>%d</bBuddy3>\r\n", gMercProfiles[ cnt ].bBuddy[2]);
-			FilePrintf(hFile,"\t\t<bBuddy4>%d</bBuddy4>\r\n", gMercProfiles[ cnt ].bBuddy[3]);
-			FilePrintf(hFile,"\t\t<bBuddy5>%d</bBuddy5>\r\n", gMercProfiles[ cnt ].bBuddy[4]);
+			// Phase 6: bBuddy[]/bHated[]/bLearnToLike/bLearnToHate are now ProfileID - a class type passed
+			// through this C varargs FilePrintf would skip operator UINT16() and pass raw bytes, so we
+			// cast to int explicitly (same pattern used elsewhere post-widening).
+			FilePrintf(hFile,"\t\t<bBuddy1>%d</bBuddy1>\r\n", static_cast<int>(gMercProfiles[ cnt ].bBuddy[0]));
+			FilePrintf(hFile,"\t\t<bBuddy2>%d</bBuddy2>\r\n", static_cast<int>(gMercProfiles[ cnt ].bBuddy[1]));
+			FilePrintf(hFile,"\t\t<bBuddy3>%d</bBuddy3>\r\n", static_cast<int>(gMercProfiles[ cnt ].bBuddy[2]));
+			FilePrintf(hFile,"\t\t<bBuddy4>%d</bBuddy4>\r\n", static_cast<int>(gMercProfiles[ cnt ].bBuddy[3]));
+			FilePrintf(hFile,"\t\t<bBuddy5>%d</bBuddy5>\r\n", static_cast<int>(gMercProfiles[ cnt ].bBuddy[4]));
 
-			FilePrintf(hFile,"\t\t<bLearnToLike>%d</bLearnToLike>\r\n", gMercProfiles[ cnt ].bLearnToLike);
+			FilePrintf(hFile,"\t\t<bLearnToLike>%d</bLearnToLike>\r\n", static_cast<int>(gMercProfiles[ cnt ].bLearnToLike));
 			FilePrintf(hFile,"\t\t<bLearnToLikeTime>%d</bLearnToLikeTime>\r\n", gMercProfiles[ cnt ].bLearnToLikeTime);
 
-			FilePrintf(hFile,"\t\t<bHated1>%d</bHated1>\r\n", gMercProfiles[ cnt ].bHated[0]);
+			FilePrintf(hFile,"\t\t<bHated1>%d</bHated1>\r\n", static_cast<int>(gMercProfiles[ cnt ].bHated[0]));
 			FilePrintf(hFile,"\t\t<bHatedTime1>%d</bHatedTime1>\r\n", gMercProfiles[ cnt ].bHatedTime[0]);
-			FilePrintf(hFile,"\t\t<bHated2>%d</bHated2>\r\n", gMercProfiles[ cnt ].bHated[1]);
+			FilePrintf(hFile,"\t\t<bHated2>%d</bHated2>\r\n", static_cast<int>(gMercProfiles[ cnt ].bHated[1]));
 			FilePrintf(hFile,"\t\t<bHatedTime2>%d</bHatedTime2>\r\n", gMercProfiles[ cnt ].bHatedTime[1]);
-			FilePrintf(hFile,"\t\t<bHated3>%d</bHated3>\r\n", gMercProfiles[ cnt ].bHated[2]);
+			FilePrintf(hFile,"\t\t<bHated3>%d</bHated3>\r\n", static_cast<int>(gMercProfiles[ cnt ].bHated[2]));
 			FilePrintf(hFile,"\t\t<bHatedTime3>%d</bHatedTime3>\r\n", gMercProfiles[ cnt ].bHatedTime[2]);
-			FilePrintf(hFile,"\t\t<bHated4>%d</bHated4>\r\n", gMercProfiles[ cnt ].bHated[3]);
+			FilePrintf(hFile,"\t\t<bHated4>%d</bHated4>\r\n", static_cast<int>(gMercProfiles[ cnt ].bHated[3]));
 			FilePrintf(hFile,"\t\t<bHatedTime4>%d</bHatedTime4>\r\n", gMercProfiles[ cnt ].bHatedTime[3]);
-			FilePrintf(hFile,"\t\t<bHated5>%d</bHated5>\r\n", gMercProfiles[ cnt ].bHated[4]);
+			FilePrintf(hFile,"\t\t<bHated5>%d</bHated5>\r\n", static_cast<int>(gMercProfiles[ cnt ].bHated[4]));
 			FilePrintf(hFile,"\t\t<bHatedTime5>%d</bHatedTime5>\r\n", gMercProfiles[ cnt ].bHatedTime[4]);
 
-			FilePrintf(hFile,"\t\t<bLearnToHate>%d</bLearnToHate>\r\n", gMercProfiles[ cnt ].bLearnToHate);
+			FilePrintf(hFile,"\t\t<bLearnToHate>%d</bLearnToHate>\r\n", static_cast<int>(gMercProfiles[ cnt ].bLearnToHate));
 			FilePrintf(hFile,"\t\t<bLearnToHateTime>%d</bLearnToHateTime>\r\n", gMercProfiles[ cnt ].bLearnToHateTime);
 
 			FilePrintf(hFile,"\t\t<bRace>%d</bRace>\r\n",											gMercProfiles[ cnt ].bRace);

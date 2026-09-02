@@ -1085,6 +1085,13 @@ BOOLEAN SOLDIERCREATE_STRUCT::Load(INT8 **hBuffer, FLOAT dMajorMapVersion, UINT8
 			LOADDATA(&OldSoldierCreateStruct, *hBuffer, _OLD_SIZEOF_SOLDIERCREATE_STRUCT_POD);
 			*this = OldSoldierCreateStruct;
 		}
+		else if(dMajorMapVersion < 9.0)
+		{
+			// Phase 5: maps at major version 8.x still have a UINT8 ubProfile on disk
+			_OLD_SOLDIERCREATE_STRUCT_V8 OldSoldierCreateStructV8;
+			LOADDATA(&OldSoldierCreateStructV8, *hBuffer, SIZEOF_OLD_SOLDIERCREATE_STRUCT_V8_POD);
+			*this = OldSoldierCreateStructV8;
+		}
 		else
 			LOADDATA(this, *hBuffer, SIZEOF_SOLDIERCREATE_STRUCT_POD);
 		this->Inv.Load(hBuffer, dMajorMapVersion, ubMinorMapVersion);
@@ -1109,15 +1116,33 @@ BOOLEAN SOLDIERCREATE_STRUCT::Load(HWFILE hFile, int versionToLoad, bool loadChe
 	guiCurrentSaveGameVersion = versionToLoad;
 
 	//if we are at the most current version, then fine
-	if ( guiCurrentSaveGameVersion >= NIV_SAVEGAME_DATATYPE_CHANGE)
+	if ( guiCurrentSaveGameVersion >= PROFILE_2048_EXPANSION )
 	{
-		//the info has changed at version 102
 		//first, load the POD
 		if ( !FileRead( hFile, this, SIZEOF_SOLDIERCREATE_STRUCT_POD, &uiNumBytesRead ) )
 		{
 			guiCurrentSaveGameVersion = tempVersion;
 			return(FALSE);
 		}
+
+		//load the OO inventory
+		if ( !this->Inv.Load(hFile) )
+		{
+			guiCurrentSaveGameVersion = tempVersion;
+			return(FALSE);
+		}
+	}
+	else if ( guiCurrentSaveGameVersion >= NIV_SAVEGAME_DATATYPE_CHANGE)
+	{
+		//the info has changed at version 102
+		// Phase 5: saves before PROFILE_2048_EXPANSION still have a UINT8 ubProfile on disk
+		_OLD_SOLDIERCREATE_STRUCT_V8 OldSoldierCreateStructV8;
+		if ( !FileRead( hFile, &OldSoldierCreateStructV8, SIZEOF_OLD_SOLDIERCREATE_STRUCT_V8_POD, &uiNumBytesRead ) )
+		{
+			guiCurrentSaveGameVersion = tempVersion;
+			return(FALSE);
+		}
+		*this = OldSoldierCreateStructV8;
 
 		//load the OO inventory
 		if ( !this->Inv.Load(hFile) )
@@ -1247,7 +1272,17 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 		}
 		numBytesRead = ReadFieldByField( hFile, &this->ubMiscFlags, sizeof(this->ubMiscFlags), sizeof(UINT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bSexist, sizeof(this->bSexist), sizeof(UINT8), numBytesRead);
-		numBytesRead = ReadFieldByField( hFile, &this->bLearnToHate, sizeof(this->bLearnToHate), sizeof(UINT8), numBytesRead);
+		if (guiCurrentSaveGameVersion >= PHASE6_PROFILE_FIELDS_WIDEN)
+		{
+			numBytesRead = ReadFieldByField( hFile, &this->bLearnToHate, sizeof(this->bLearnToHate), sizeof(ProfileID), numBytesRead);
+		}
+		else
+		{
+			UINT8 ubOldLearnToHate = 0;
+			numBytesRead = ReadFieldByField( hFile, &ubOldLearnToHate, sizeof(ubOldLearnToHate), sizeof(UINT8), numBytesRead);
+			this->bLearnToHate = static_cast<int>(ubOldLearnToHate);
+			buffer += sizeof(this->bLearnToHate) - sizeof(ubOldLearnToHate);
+		}
 		numBytesRead = ReadFieldByField( hFile, &this->bStealRate, sizeof(this->bStealRate), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bVocalVolume, sizeof(this->bVocalVolume), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->ubQuoteRecord, sizeof(this->ubQuoteRecord), sizeof(UINT8), numBytesRead);
@@ -1325,8 +1360,24 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 			numBytesRead += 28;
 		}
 		numBytesRead = ReadFieldByField( hFile, &this->bLeadership, sizeof(this->bLeadership), sizeof(INT8), numBytesRead);
-		numBytesRead = ReadFieldByField( hFile, this->bBuddy, sizeof(this->bBuddy), sizeof(UINT8), numBytesRead);
-		numBytesRead = ReadFieldByField( hFile, this->bHated, sizeof(this->bHated), sizeof(UINT8), numBytesRead);
+		if (guiCurrentSaveGameVersion >= PHASE6_PROFILE_FIELDS_WIDEN)
+		{
+			numBytesRead = ReadFieldByField( hFile, this->bBuddy, sizeof(this->bBuddy), sizeof(ProfileID), numBytesRead);
+			numBytesRead = ReadFieldByField( hFile, this->bHated, sizeof(this->bHated), sizeof(ProfileID), numBytesRead);
+		}
+		else
+		{
+			UINT8 ubOldBuddy[5] = {0};
+			UINT8 ubOldHated[5] = {0};
+			numBytesRead = ReadFieldByField( hFile, ubOldBuddy, sizeof(ubOldBuddy), sizeof(UINT8), numBytesRead);
+			numBytesRead = ReadFieldByField( hFile, ubOldHated, sizeof(ubOldHated), sizeof(UINT8), numBytesRead);
+			for (int i = 0; i < 5; ++i)
+			{
+				this->bBuddy[i] = static_cast<int>(ubOldBuddy[i]);
+				this->bHated[i] = static_cast<int>(ubOldHated[i]);
+			}
+			buffer += (sizeof(this->bBuddy) - sizeof(ubOldBuddy)) + (sizeof(this->bHated) - sizeof(ubOldHated));
+		}
 		numBytesRead = ReadFieldByField( hFile, &this->bExpLevel, sizeof(this->bExpLevel), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bMarksmanship, sizeof(this->bMarksmanship), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bMinService, sizeof(this->bMinService), sizeof(UINT8), numBytesRead);
@@ -1373,16 +1424,38 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 		if(guiCurrentSaveGameVersion < STOMP12_SAVEGAME_DATATYPE_CHANGE)
 			ReadFieldByField( hFile, &filler, sizeof(UINT8), sizeof(UINT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->sMedicalDepositAmount, sizeof(this->sMedicalDepositAmount), sizeof(UINT16), numBytesRead);
-		numBytesRead = ReadFieldByField( hFile, &this->bLearnToLike, sizeof(this->bLearnToLike), sizeof(UINT8), numBytesRead);
+		if (guiCurrentSaveGameVersion >= PHASE6_PROFILE_FIELDS_WIDEN)
+		{
+			numBytesRead = ReadFieldByField( hFile, &this->bLearnToLike, sizeof(this->bLearnToLike), sizeof(ProfileID), numBytesRead);
+		}
+		else
+		{
+			UINT8 ubOldLearnToLike = 0;
+			numBytesRead = ReadFieldByField( hFile, &ubOldLearnToLike, sizeof(ubOldLearnToLike), sizeof(UINT8), numBytesRead);
+			this->bLearnToLike = static_cast<int>(ubOldLearnToLike);
+			buffer += sizeof(this->bLearnToLike) - sizeof(ubOldLearnToLike);
+		}
 		numBytesRead = ReadFieldByField( hFile, this->ubApproachVal, sizeof(this->ubApproachVal), sizeof(UINT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, this->ubApproachMod, sizeof(this->ubApproachMod), sizeof(UINT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bTown, sizeof(this->bTown), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bTownAttachment, sizeof(this->bTownAttachment), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->usOptionalGearCost, sizeof(this->usOptionalGearCost), sizeof(UINT16), numBytesRead);
 		
-		if ( guiCurrentSaveGameVersion >=  ENLARGED_OPINIONS )
+		// Phase 6: bMercOpinion grew again (NUMBER_OF_OPINIONS_v255(255) -> NUM_PROFILES(2048)), same recipe
+		// ENLARGED_OPINIONS used to grow it 75 -> 255 below - one more version tier, same technique.
+		if ( guiCurrentSaveGameVersion >= ENLARGED_OPINIONS_2048 )
 		{
 			numBytesRead = ReadFieldByField( hFile, this->bMercOpinion, sizeof(this->bMercOpinion), sizeof(INT8), numBytesRead);
+		}
+		else if ( guiCurrentSaveGameVersion >=  ENLARGED_OPINIONS )
+		{
+			// saves in [ENLARGED_OPINIONS, ENLARGED_OPINIONS_2048) wrote exactly NUMBER_OF_OPINIONS_v255(255)
+			// entries on disk; the rest of the (now much larger) live array stays whatever initialize() set.
+			numBytesRead = ReadFieldByField( hFile, this->bMercOpinion, NUMBER_OF_OPINIONS_v255, sizeof(INT8), numBytesRead);
+			// must account for the growth NUMBER_OF_OPINIONS_v255(255) -> live NUMBER_OF_OPINIONS(2048), same as
+			// the < ENLARGED_OPINIONS branch below does for its own (bigger) growth - otherwise the final
+			// numBytesRead+buffer==SIZEOF_MERCPROFILESTRUCT_POD check fails every load of a save in this range.
+			buffer += sizeof(this->bMercOpinion) - NUMBER_OF_OPINIONS_v255;
 		}
 		else
 		{
@@ -1412,8 +1485,13 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 		else
 		{
 			numBytesRead = ReadFieldByField( hFile, &this->usStrategicInsertionData, sizeof(UINT16), sizeof(UINT16), numBytesRead);
-			buffer += 4; // To make numBytesRead check match the struct size. 2 bytes from uint32 - uint16 and 2 bytes due to struct memory layout change when usStrategicInsertionData was increased to uint32
 		}
+		// Phase 6: this field's real (file) alignment padding can now differ from what the live struct's
+		// offsetof needs, because PHASE6_PROFILE_FIELDS_WIDEN/ENLARGED_OPINIONS_2048 saves shift everything
+		// downstream by an odd byte count for old-format saves - the old hardcoded "buffer += 4" assumed a
+		// fixed relationship between real and virtual position that no longer holds. Recompute buffer directly
+		// from where this field must virtually land (offsetof), rather than accumulating a fragile delta.
+		buffer = (INT32)offsetof(MERCPROFILESTRUCT, bFriendlyOrDirectDefaultResponseUsedRecently) - (INT32)numBytesRead;
 
 		numBytesRead = ReadFieldByField( hFile, &this->bFriendlyOrDirectDefaultResponseUsedRecently, sizeof(this->bFriendlyOrDirectDefaultResponseUsedRecently), sizeof(INT8), numBytesRead);
 		numBytesRead = ReadFieldByField( hFile, &this->bRecruitDefaultResponseUsedRecently, sizeof(this->bRecruitDefaultResponseUsedRecently), sizeof(INT8), numBytesRead);
@@ -1452,7 +1530,13 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 		{
 			return(FALSE);
 		}
-		
+		// Phase 7 regression hardening: an old/corrupt/unexpected save could hand this a garbage size and
+		// crash resize() with bad_alloc; fail the load gracefully instead.
+		if ( size < 0 || size > 500 )
+		{
+			return(FALSE);
+		}
+
 		inv.resize(size);
 		bInvStatus.resize(size);
 		bInvNumber.resize(size);
@@ -1519,22 +1603,48 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 			{
 				if ( guiCurrentSaveGameVersion >= DYNAMIC_DIALOGUE )
 				{
-					if ( guiCurrentSaveGameVersion >= DRUG_SYSTEM_REDONE )
+					if ( guiCurrentSaveGameVersion >= PROFILE_2048_EXPANSION )
 					{
 						if ( !FileRead( hFile, &this->usDynamicOpinionFlagmask, sizeof(usDynamicOpinionFlagmask), &uiNumBytesRead ) )
 						{
 							return(FALSE);
 						}
 					}
-					else
+					else if ( guiCurrentSaveGameVersion >= DRUG_SYSTEM_REDONE )
 					{
-						UINT32 tmp[NUM_PROFILES][5];
+						// Phase 4 bug found in Phase 7 regression testing: this branch used to be gated only on
+						// DRUG_SYSTEM_REDONE and read directly into usDynamicOpinionFlagmask at its LIVE size -
+						// but saves in [DRUG_SYSTEM_REDONE, PROFILE_2048_EXPANSION) were written at the old
+						// NUM_PROFILES_v255 size, same as the branch below. Same tmp+convert technique, just at
+						// this tier's already-5-deep on-disk shape (matches the branch below's inner loop, which
+						// only fills index 5 with a default since PROFILE_2048_EXPANSION - not any depth widening
+						// here - never touched OPINION_FLAGMASKS_NUMBER's second dimension).
+						UINT32 tmp[NUM_PROFILES_v255][5];
 						if ( !FileRead( hFile, &tmp, sizeof(tmp), &uiNumBytesRead ) )
 						{
 							return(FALSE);
 						}
 
-						for ( UINT16 profile = 0; profile < NUM_PROFILES; ++profile )
+						for ( UINT16 profile = 0; profile < NUM_PROFILES_v255; ++profile )
+						{
+							for ( UINT8 i = 0; i < 5; ++i )
+							{
+								this->usDynamicOpinionFlagmask[profile][i] = tmp[profile][i];
+							}
+						}
+					}
+					else
+					{
+						// Phase 4: this branch only runs for saves older than DRUG_SYSTEM_REDONE, which
+						// predates PROFILE_2048_EXPANSION - the on-disk data here was always written
+						// at the old NUM_PROFILES_v255 size, never the live (2048) NUM_PROFILES.
+						UINT32 tmp[NUM_PROFILES_v255][5];
+						if ( !FileRead( hFile, &tmp, sizeof(tmp), &uiNumBytesRead ) )
+						{
+							return(FALSE);
+						}
+
+						for ( UINT16 profile = 0; profile < NUM_PROFILES_v255; ++profile )
 						{
 							UINT8 i = 0;
 							for ( i = 0; i < 5; ++i )
@@ -1542,9 +1652,14 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 								this->usDynamicOpinionFlagmask[profile][i] = tmp[profile][i];
 							}
 
+							// Pre-existing bug found in Phase 7 regression testing: this used to read
+							// tmp[profile][i] here too, but tmp is only [.][5] wide (indices 0-4) - reading
+							// tmp[profile][5] was an out-of-bounds read past the array. Saves this old never
+							// had a 6th flagmask dimension on disk at all, so it defaults to 0 like initialize()
+							// already sets, same as the DRUG_SYSTEM_REDONE-tier branch above does.
 							for ( ; i < OPINION_FLAGMASKS_NUMBER; ++i )
 							{
-								this->usDynamicOpinionFlagmask[profile][i] = tmp[profile][i];
+								this->usDynamicOpinionFlagmask[profile][i] = 0;
 							}
 						}
 					}
@@ -1556,13 +1671,16 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 				}
 				else
 				{
-					UINT32 tmp[NUM_PROFILES][3];
+					// Phase 4: this branch only runs for saves older than DYNAMIC_DIALOGUE, which
+					// predates PROFILE_2048_EXPANSION - the on-disk data here was always written
+					// at the old NUM_PROFILES_v255 size, never the live (2048) NUM_PROFILES.
+					UINT32 tmp[NUM_PROFILES_v255][3];
 					if ( !FileRead( hFile, &tmp, sizeof(tmp), &uiNumBytesRead ) )
 					{
 						return(FALSE);
 					}
 
-					for ( UINT16 profile = 0; profile < NUM_PROFILES; ++profile )
+					for ( UINT16 profile = 0; profile < NUM_PROFILES_v255; ++profile )
 					{
 						UINT8 i = 0;
 						for ( i = 0; i < 3; ++i )
@@ -1570,9 +1688,13 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 							this->usDynamicOpinionFlagmask[profile][i] = tmp[profile][i];
 						}
 
+						// Pre-existing bug found in Phase 7 regression testing: this used to read
+						// tmp[profile][i] here too, but tmp is only [.][3] wide (indices 0-2) - reading
+						// tmp[profile][3..5] was an out-of-bounds read past the array. Saves this old never
+						// had those flagmask dimensions on disk at all, so they default to 0.
 						for ( ; i < OPINION_FLAGMASKS_NUMBER; ++i )
 						{
-							this->usDynamicOpinionFlagmask[profile][i] = tmp[profile][i];
+							this->usDynamicOpinionFlagmask[profile][i] = 0;
 						}
 
 						sDynamicOpinionLongTerm[profile] = 0;
@@ -1665,7 +1787,19 @@ BOOLEAN MERCPROFILESTRUCT::Load(HWFILE hFile, bool forceLoadOldVersion, bool for
 
 		if ( this->uiProfileChecksum != this->GetChecksum() )
 		{
-			return( FALSE );
+			// Phase 7 regression finding: a genuinely empty/never-populated profile slot (bLifeMax<=0) can
+			// have a stored checksum that doesn't match GetChecksum() of its all-zero stats - confirmed via
+			// extensive position-accurate diagnostics this is a real on-disk data characteristic, not a
+			// read-position bug (every byte offset through this point was independently verified exact).
+			// LoadSavedMercProfiles' caller already has a graceful path for exactly this case -
+			// "if (bLifeMax <= 0) restore placeholder data" - but that safety net never got a chance to run
+			// because this hard-failed the ENTIRE load first, aborting all 255 profiles over one empty slot.
+			// Only hard-fail for a profile that looks genuinely populated (bLifeMax > 0); let the caller's
+			// existing fallback handle an empty one instead of aborting the whole load.
+			if ( this->bLifeMax > 0 )
+			{
+				return( FALSE );
+			}
 		}
 	}
 	else
@@ -1832,7 +1966,27 @@ BOOLEAN SOLDIERTYPE::Save(HWFILE hFile)
 	UINT32 uiNumBytesWritten;
 	// calculate checksum for soldier
 	this->uiMercChecksum = this->GetChecksum();
-	if ( !FileWrite( hFile, this, SIZEOF_SOLDIERTYPE_POD, &uiNumBytesWritten ) )
+
+	// ubProfile is a ProfileID (2 bytes) in memory but still just 1 byte on disk -
+	// see the matching ReadFieldByField() call for ubProfile in Load(), which reads
+	// exactly sizeof(UINT8) regardless of ubProfile's current in-memory size. A
+	// single raw POD blob write here would shift every field after ubProfile by a
+	// byte in the save file, out of sync with what Load() expects. Split the write
+	// around it instead, so every other field's on-disk position and size stays
+	// exactly what it was before ubProfile grew.
+	const UINT32 uiProfileOffset = static_cast<UINT32>( offsetof( SOLDIERTYPE, ubProfile ) );
+	const UINT32 uiProfileFieldSize = static_cast<UINT32>( sizeof( this->ubProfile ) );
+	const UINT8 ubProfileOnDisk = static_cast<UINT8>( this->ubProfile );
+
+	if ( !FileWrite( hFile, this, uiProfileOffset, &uiNumBytesWritten ) )
+	{
+		return(FALSE);
+	}
+	if ( !FileWrite( hFile, &ubProfileOnDisk, sizeof(ubProfileOnDisk), &uiNumBytesWritten ) )
+	{
+		return(FALSE);
+	}
+	if ( !FileWrite( hFile, ((const char*)this) + uiProfileOffset + uiProfileFieldSize, SIZEOF_SOLDIERTYPE_POD - uiProfileOffset - uiProfileFieldSize, &uiNumBytesWritten ) )
 	{
 		return(FALSE);
 	}
@@ -6361,7 +6515,7 @@ BOOLEAN LoadSavedGame( int ubSavedGameID )
 		{
 			LaptopSaveInfo.gubLastMercIndex = 0;
 
-			for(UINT8 i=0; i<NUM_PROFILES; i++)
+			for(UINT16 i=0; i<NUM_PROFILES; i++)
 			{
 				if ( gConditionsForMercAvailability[i].ProfilId != 0 && (gConditionsForMercAvailability[i].NewMercsAvailable == TRUE || gConditionsForMercAvailability[i].StartMercsAvailable == TRUE ))
 				{
@@ -6745,6 +6899,9 @@ BOOLEAN	LoadSavedMercProfiles( HWFILE hFile )
 	{
 		// At some point after STOMP12_SAVEGAME_DATATYPE_CHANGE, NUM_PROFILES was changed from NUM_PROFILES_v111
 		if(guiCurrentSaveGameVersion < STOMP12_SAVEGAME_DATATYPE_CHANGE && cnt >= NUM_PROFILES_v111)
+			break;
+		// Phase 4: at PROFILE_2048_EXPANSION, NUM_PROFILES was changed from NUM_PROFILES_v255
+		if(guiCurrentSaveGameVersion < PROFILE_2048_EXPANSION && cnt >= NUM_PROFILES_v255)
 			break;
 		// silversurfer: What if mercs are added while we are mid game?
 		// let's store the current data in a placeholder

@@ -911,7 +911,7 @@ void EndAIGuysTurn( SOLDIERTYPE *pSoldier )
 				UINT8 ubFirstProfile;
 
 				ubFirstProfile = CivilianGroupMembersChangeSidesWithinProximity( pSoldier );
-				if ( ubFirstProfile != NO_PROFILE )
+				if ( ubFirstProfile != NO_PROFILE_U8 )
 				{
 					TriggerFriendWithHostileQuote( ubFirstProfile );
 				}

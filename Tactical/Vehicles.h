@@ -277,12 +277,47 @@ enum{
 extern INT16 sVehicleOrigArmorValues[ NUMBER_OF_TYPES_OF_VEHICLES][ NUMBER_OF_INTERNAL_HIT_LOCATIONS_IN_VEHICLE];
 
 #define MAXPASSENGERS 10
+// Phase 6: frozen copy of VEHICLETYPE's on-disk layout as it existed through
+// SAVE_GAME_VERSION PHASE6_PROFILE_FIELDS_WIDEN - 1 - ubProfileID was still UINT8.
+// VEHICLETYPE gets raw-blob written/read whole (see Tactical/Vehicles.cpp), so
+// widening ubProfileID shifts fValid's position within that blob; old saves need
+// to be read into this shape and converted, the same way SOLDIERTYPE/
+// SOLDIERCREATE_STRUCT's legacy formats are frozen. Never add fields here.
+typedef struct
+{
+ PathStPtr pMercPath;
+ UINT8	 ubMovementGroup;
+ UINT8	 ubVehicleType;
+ INT16	 sSectorX;
+ INT16	 sSectorY;
+ INT16	 sSectorZ;
+ BOOLEAN fBetweenSectors;
+ INT32 sGridNo;
+ SOLDIERTYPE *pPassengers[ MAXPASSENGERS ];
+ SoldierID	ubDriver;
+ INT16		sInternalHitLocations[ NUMBER_OF_EXTERNAL_HIT_LOCATIONS_ON_VEHICLE ];
+ INT16		sArmourType;
+ INT16		sExternalArmorLocationsStatus[ NUMBER_OF_EXTERNAL_HIT_LOCATIONS_ON_VEHICLE ];
+ INT16		sCriticalHits[ NUMBER_OF_INTERNAL_HIT_LOCATIONS_IN_VEHICLE ];
+ INT32		iOnSound;
+ INT32		iOffSound;
+ INT32		iMoveSound;
+ INT32		iOutOfSound;
+ BOOLEAN	fFunctional;
+ BOOLEAN	fDestroyed;
+ INT32		iMovementSoundID;
+ UINT8		ubProfileID;
+
+ BOOLEAN fValid;
+
+} _OLD_VEHICLETYPE_PHASE6;
+
 // struct for vehicles
 typedef struct
 {
  PathStPtr pMercPath;	// vehicle's stategic path list
  UINT8	 ubMovementGroup; // the movement group this vehicle belongs to
- UINT8	 ubVehicleType; // type of vehicle 
+ UINT8	 ubVehicleType; // type of vehicle
  INT16	 sSectorX;	// X position on the Stategic Map
  INT16	 sSectorY;	// Y position on the Stategic Map
  INT16	 sSectorZ;
@@ -301,7 +336,7 @@ typedef struct
  BOOLEAN	fFunctional;
  BOOLEAN	fDestroyed;
  INT32		iMovementSoundID;
- UINT8		ubProfileID;
+ ProfileID	ubProfileID;
 
  BOOLEAN fValid;
 

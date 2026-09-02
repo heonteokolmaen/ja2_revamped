@@ -61,7 +61,7 @@ namespace AI
                     sniperwarning = TRUE;
 
 					// Flugente: additional dialogue
-					AdditionalTacticalCharacterDialogue_AllInCurrentSector( NO_PROFILE, ADE_SNIPERWARNING );
+					AdditionalTacticalCharacterDialogue_AllInCurrentSector( NO_PROFILE_U8, ADE_SNIPERWARNING );
                 }
 
                 if (!biggunwarning && FindRocketLauncherOrCannon(get_npc()) != NO_SLOT )

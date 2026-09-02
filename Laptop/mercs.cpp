@@ -359,11 +359,11 @@ BOOLEAN LoadNewMercsFromLoadGameFile( HWFILE hFile )
 	// Take every index of gConditionsForMercAvailability array that we initialized in GameInitMercs() and see
 	// if we can find a matching profile ID in ConditionsForMercAvailabilityLoad array that we loaded from the savegame.
 	// This prevents some issues when old savegames are loaded with updated MercAvailability.xml.
-	for ( UINT8 i=0; i<NUM_PROFILES; i++)
+	for ( UINT16 i=0; i<NUM_PROFILES; i++)
 	{
 		if ( gConditionsForMercAvailability[i].ProfilId != 0 )
 		{
-			for ( UINT8 ilook=0; ilook<NUM_PROFILES; ilook++)
+			for ( UINT16 ilook=0; ilook<NUM_PROFILES; ilook++)
 			{
 				if ( ConditionsForMercAvailabilityLoad[ilook].ProfilId == gConditionsForMercAvailability[i].ProfilId )
 				{
@@ -386,13 +386,17 @@ BOOLEAN LoadNewMercsFromLoadGameFile( HWFILE hFile )
 // it matches the contents of gConditionsForMercAvailability array
 void RevaluateMercArray()
 {
-	UINT8 i;
+	UINT16 i;
 
 	NUMBER_OF_MERCS = 0;
 	LAST_MERC_ID = -1;
 	NUMBER_OF_BAD_MERCS = -1;
 	
 	// first clear gubMercArray
+	// TODO(Phase 4 follow-up): gubMercArray/AimMercArray (aim.h, mercs.h) and
+	// gConditionsForMercAvailability::uiIndex are UINT8-valued despite this loop
+	// now safely iterating past 255 - the MERC-hiring-availability subsystem
+	// needs its own dedicated widening pass before profiles above 254 work in it
 	for ( i=0; i<NUM_PROFILES; i++)
 	{
 		gubMercArray[ i ] = 0;
@@ -481,7 +485,7 @@ BOOLEAN CanMercBeAvailableDuringInit( UINT8 ubMercToCheck )// anv: for all mercs
 
 void GameInitMercs()
 {
-	UINT8 i;
+	UINT16 i;
 
 	NUMBER_OF_MERCS = 0;
 	LAST_MERC_ID = -1;
@@ -2542,7 +2546,7 @@ void HandlePlayerHiringMerc( UINT8 ubHiredMercID )
 
 BOOLEAN IsMercMercAvailable( UINT8 ubMercID )
 {
-	UINT8	cnt;
+	UINT16	cnt;
 
 	//loop through the array of mercs
 	for( cnt=0; cnt<NUM_PROFILES; cnt++ ) //LaptopSaveInfo.gubLastMercIndex; cnt++ )
@@ -3060,7 +3064,7 @@ BOOLEAN AreAnyOfTheNewMercsAvailable()
 	if( LaptopSaveInfo.fNewMercsAvailableAtMercSite )
 		return( FALSE );
 
-	for(UINT8 i=0; i<NUM_PROFILES; ++i)
+	for(UINT16 i=0; i<NUM_PROFILES; ++i)
 	{
 		if ( gConditionsForMercAvailability[i].NewMercsAvailable == FALSE && gMercProfiles[i].Type == PROFILETYPE_MERC )
 		{
@@ -3082,7 +3086,7 @@ void ShouldAnyNewMercMercBecomeAvailable()
 	// if ALL_MERCS_AT_MERC is on, .StartMercsAvailable = TRUE anyway, so there won't be any conflicts or unnecessary emails
 	//if(!gGameExternalOptions.fAllMercsAvailable)
 	{
-		for(UINT8 i=0; i<NUM_PROFILES; i++)
+		for(UINT16 i=0; i<NUM_PROFILES; i++)
 		{
 			if ( gConditionsForMercAvailability[i].ProfilId != 0 && gConditionsForMercAvailability[i].NewMercsAvailable == FALSE && gConditionsForMercAvailability[i].StartMercsAvailable == FALSE )
 			{
@@ -3167,7 +3171,7 @@ void NewMercsAvailableAtMercSiteCallBack()
 	// rftr: don't spam the user's email when MERC has multiple new personnel available on the same day
 	bool sentNewMercsEmail = false;
 
-	for (UINT8 i = 0; i < NUM_PROFILES; i++)
+	for (UINT16 i = 0; i < NUM_PROFILES; i++)
 	{
 		if (gConditionsForMercAvailability[i].ProfilId != 0 && gConditionsForMercAvailability[i].NewMercsAvailable == FALSE && gConditionsForMercAvailability[i].StartMercsAvailable == FALSE)
 		{

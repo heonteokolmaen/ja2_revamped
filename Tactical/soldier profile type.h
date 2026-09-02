@@ -2,11 +2,10 @@
 #define __SOLDER_PROFILE_TYPE_H
 
 #include "Overhead Types.h"
+#include "Profile Constants.h"
 #include "Soldier Control.h"
 #include "mapscreen.h"
 
-#define NUM_PROFILES		255 //170 new profiles by Jazz
-#define NUM_PROFILES_v111	170
 //tais: maximum amount of starting gear kits
 #define NUM_MERCSTARTINGGEAR_KITS	5
 
@@ -98,9 +97,10 @@
 //
 // Flugente 16/04/2013: Done
 #define NUMBER_OF_OPINIONS_OLD	75		// for old structures, we need to keep this value. Do NOT change, or you'll be in a world of pain. I warned you.
-#define NUMBER_OF_OPINIONS		255	
+#define NUMBER_OF_OPINIONS_v255	255		// Phase 6: frozen old cap (was NUMBER_OF_OPINIONS pre-ENLARGED_OPINIONS_2048). Do NOT change - old saves in the [141, 189) version range wrote exactly this many entries.
+#define NUMBER_OF_OPINIONS		NUM_PROFILES	// Phase 6: grown from a hardcoded 255 to the live NUM_PROFILES(2048) cap, same recipe used to grow it 75 -> 255 (ENLARGED_OPINIONS)
 
-	
+
 inline bool OKToCheckOpinion(int profileNumber) {
 	return (profileNumber < NUMBER_OF_OPINIONS);
 }
@@ -822,7 +822,7 @@ public:
 	BOOLEAN		fRegresses;
 	UINT8		ubMiscFlags;
 	UINT8		bSexist;
-	UINT8		bLearnToHate;
+	ProfileID	bLearnToHate;	// Phase 6: widened from UINT8 -> ProfileID (used as a profile-ID reference, see HATED_MERC macro)
 
 	// skills
 	INT8		bStealRate;
@@ -903,8 +903,8 @@ public:
 	//INT8	bSkillTrait3; // added by SANDRO
 	INT8	bLeadership;
 
-	UINT8	bBuddy[5];
-	UINT8	bHated[5];
+	ProfileID	bBuddy[5];	// Phase 6: widened from UINT8[5] -> ProfileID[5]
+	ProfileID	bHated[5];	// Phase 6: widened from UINT8[5] -> ProfileID[5]
 	INT8	bExpLevel;		// general experience level
 
 	INT8	bMarksmanship;
@@ -957,7 +957,7 @@ public:
 	INT8 bBaseMorale;
 	UINT16 sMedicalDepositAmount;
 	
-	UINT8 bLearnToLike;
+	ProfileID bLearnToLike;	// Phase 6: widened from UINT8 -> ProfileID (used as a profile-ID reference, see BUDDY_MERC macro)
 	UINT8 ubApproachVal[4];
 	UINT8 ubApproachMod[3][4];
 	INT8 bTown;

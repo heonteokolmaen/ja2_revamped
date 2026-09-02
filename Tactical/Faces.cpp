@@ -127,7 +127,7 @@ INT32	InitFace( UINT8 usMercProfileID, SoldierID ubSoldierID, UINT32 uiInitFlags
 	UINT32	uiBlinkFrequency;
 	UINT32	uiExpressionFrequency;
 
-	if ( usMercProfileID == NO_PROFILE )
+	if ( usMercProfileID == NO_PROFILE_U8 )
 	{
 		return( -1 );
 	}

@@ -1701,7 +1701,7 @@ BOOLEAN AddDeadArmsDealerItemsToWorld( UINT8 usProfileID, SoldierID aMercID )
 	SOLDIERTYPE* pSoldier = FindSoldierByProfileID( usProfileID, FALSE );
 
 	// not if this isn't a proper profile
-	if ( usProfileID == NO_PROFILE )
+	if ( usProfileID == NO_PROFILE_U8 )
 	{
 		pSoldier = aMercID;
 

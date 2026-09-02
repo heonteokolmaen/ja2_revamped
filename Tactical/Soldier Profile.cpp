@@ -1281,7 +1281,7 @@ void MakeRemainingTerroristsTougher( void )
 
 void DecideOnAssassin( void )
 {
-	UINT8		ubAssassinPossibility[NUM_ASSASSINS] = { NO_PROFILE, NO_PROFILE, NO_PROFILE, NO_PROFILE, NO_PROFILE, NO_PROFILE };
+	UINT8		ubAssassinPossibility[NUM_ASSASSINS] = { NO_PROFILE_U8, NO_PROFILE_U8, NO_PROFILE_U8, NO_PROFILE_U8, NO_PROFILE_U8, NO_PROFILE_U8 };
 	UINT8		ubAssassinsPossible = 0;
 	UINT8 ubLoop, ubLoop2;
 	UINT8		ubTown;
@@ -1529,7 +1529,7 @@ SOLDIERTYPE * FindSoldierByProfileID( UINT8 ubProfileID, BOOLEAN fPlayerMercsOnl
 	{
 		pSoldier = MercPtrs[ubLoop];
 
-		if (pSoldier->bActive && pSoldier->ubProfile == ubProfileID)
+		if (pSoldier->bActive && pSoldier->ubProfile == static_cast<int>(ubProfileID)) // TODO: ubProfileID param is still UINT8 (FindSoldierByProfileID signature) - widen deliberately if needed
 		{
 			return( pSoldier );
 		}
@@ -2011,7 +2011,7 @@ BOOLEAN UnRecruitEPC( UINT8 ubCharNum )
 
 
 
-INT8 WhichBuddy( UINT8 ubCharNum, UINT8 ubBuddy )
+INT8 WhichBuddy( ProfileID ubCharNum, ProfileID ubBuddy )
 {
 	MERCPROFILESTRUCT *	pProfile;
 	INT8								bLoop;
@@ -2032,7 +2032,7 @@ INT8 WhichBuddy( UINT8 ubCharNum, UINT8 ubBuddy )
 	return( -1 );
 }
 
-INT8 WhichHated( UINT8 ubCharNum, UINT8 ubHated )
+INT8 WhichHated( ProfileID ubCharNum, ProfileID ubHated )
 {
 	MERCPROFILESTRUCT *	pProfile;
 	INT8								bLoop;
@@ -2149,7 +2149,7 @@ void UpdateSoldierPointerDataIntoProfile( BOOLEAN fPlayerMercs )
 BOOLEAN DoesMercHaveABuddyOnTheTeam( UINT8 ubMercID )
 {
 	UINT8	ubCnt;
-	UINT8	bBuddyID;
+	ProfileID	bBuddyID;	// Phase 6: widened UINT8 -> ProfileID
 
 	// loop through the list of people the merc is buddies with
 	for(ubCnt=0; ubCnt< 6; ubCnt++)
@@ -2168,10 +2168,14 @@ BOOLEAN DoesMercHaveABuddyOnTheTeam( UINT8 ubMercID )
 		}
 
 		//If its not a valid 'buddy'
-		if( bBuddyID == NUM_PROFILES )
+		// Phase 6: this sentinel was written back when NUM_PROFILES == 255 (bBuddy/bLearnToLike were UINT8,
+		// and 255 - one past the old max valid index - meant "no buddy"). NUM_PROFILES is now 2048 (Phase 4),
+		// so the check must compare against the frozen old cap (NUM_PROFILES_v255), not the live constant,
+		// or it can never match existing "no buddy" data again.
+		if( bBuddyID == NUM_PROFILES_v255 )
 			continue;
 
-		if( IsMercOnTeam( bBuddyID, FALSE, FALSE ) )
+		if( IsMercOnTeam( static_cast<UINT8>(bBuddyID), FALSE, FALSE ) )	// Phase 6: IsMercOnTeam itself is a separate, wider migration (used across the whole codebase for on-team lookups) - out of scope here; explicit cast documents the boundary instead of relying on silent /wd4244 narrowing
 		{
 			if( !IsMercDead( bBuddyID ) )
 			{
@@ -2370,7 +2374,7 @@ SOLDIERTYPE* SwapToProfile( SOLDIERTYPE * pSoldier, UINT8 ubDestProfile )
 	// remove face
 	DeleteSoldierFace( pSoldier );
 
-	pSoldier->ubProfile = ubDestProfile;
+	pSoldier->ubProfile = static_cast<int>(ubDestProfile); // TODO: ubDestProfile param is still UINT8 (SwapToProfile signature) - widen deliberately if needed
 
 	// create new face
 	pSoldier->iFaceIndex = InitSoldierFace( pSoldier );
@@ -2605,13 +2609,22 @@ void OverwriteMercProfileWithXMLData( UINT32 uiLoop )
 		}
 		//////////////////////////////////////////////////////////////////////////////////////
 
-		memcpy( &(gMercProfiles[ uiLoop ].bBuddy), &(tempProfiles[ uiLoop ].bBuddy), 5 * sizeof (UINT8));
-		gMercProfiles[ uiLoop ].bLearnToLike = tempProfiles[ uiLoop ].bLearnToLike ;
+		// Phase 6: tempProfiles is TEMPPROFILETYPE (XML staging struct), which deliberately keeps
+		// bBuddy[]/bHated[] as UINT8[5] - it's a different type than the now-widened MERCPROFILESTRUCT,
+		// so this can no longer be a raw memcpy; convert element-by-element instead.
+		for ( int iBuddyLoop = 0; iBuddyLoop < 5; iBuddyLoop++ )
+		{
+			gMercProfiles[ uiLoop ].bBuddy[iBuddyLoop] = static_cast<int>(tempProfiles[ uiLoop ].bBuddy[iBuddyLoop]);
+		}
+		gMercProfiles[ uiLoop ].bLearnToLike = static_cast<int>(tempProfiles[ uiLoop ].bLearnToLike) ;
 		gMercProfiles[ uiLoop ].bLearnToLikeTime = tempProfiles[ uiLoop ].bLearnToLikeTime ;
 
-		memcpy( &(gMercProfiles[ uiLoop ].bHated), &(tempProfiles[ uiLoop ].bHated), 5 * sizeof (UINT8));
+		for ( int iHatedLoop = 0; iHatedLoop < 5; iHatedLoop++ )
+		{
+			gMercProfiles[ uiLoop ].bHated[iHatedLoop] = static_cast<int>(tempProfiles[ uiLoop ].bHated[iHatedLoop]);
+		}
 		memcpy( &(gMercProfiles[ uiLoop ].bHatedTime), &(tempProfiles[ uiLoop ].bHatedTime), 5 * sizeof (INT8));
-		gMercProfiles[ uiLoop ].bLearnToHate = tempProfiles[ uiLoop ].bLearnToHate ;
+		gMercProfiles[ uiLoop ].bLearnToHate = static_cast<int>(tempProfiles[ uiLoop ].bLearnToHate) ;
 		gMercProfiles[ uiLoop ].bLearnToHateTime = tempProfiles[ uiLoop ].bLearnToHateTime ;
 
 		gMercProfiles[ uiLoop ].bRace						= tempProfiles[ uiLoop ].bRace;
@@ -2690,7 +2703,9 @@ void OverwriteMercProfileWithXMLData( UINT32 uiLoop )
 
 void OverwriteMercOpinionsWithXMLData( UINT32 uiLoop )
 {
-	for ( UINT8 cnt=0; cnt< NUMBER_OF_OPINIONS; ++cnt )
+	// Phase 6: was UINT8 (max 255) - now that NUMBER_OF_OPINIONS is NUM_PROFILES(2048), a UINT8 counter
+	// would wrap forever and never reach the loop bound (infinite loop).
+	for ( UINT16 cnt=0; cnt< NUMBER_OF_OPINIONS; ++cnt )
 	{
 		gMercProfiles[ uiLoop ].bMercOpinion[cnt] = tempProfiles[ uiLoop ].bMercOpinion[cnt] ;
 	}

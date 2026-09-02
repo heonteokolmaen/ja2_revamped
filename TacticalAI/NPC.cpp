@@ -402,7 +402,7 @@ BOOLEAN EnsureQuoteFileLoaded( UINT8 ubNPC )
 		{
 #ifdef CRIPPLED_VERSION
 			// make sure we're not trying to load NOPROFILE for some stupid reason
-			if ( ubNPC != NO_PROFILE )
+			if ( ubNPC != NO_PROFILE_U8 )
 			{
 				SOLDIERTYPE * pNull = NULL;
 				pNull->stats.bLife = 0; // crash!
@@ -471,10 +471,10 @@ BOOLEAN ReloadQuoteFileIfLoaded( UINT8 ubNPC )
 
 BOOLEAN RefreshNPCScriptRecord( UINT8 ubNPC, UINT8 ubRecord )
 {
-	UINT8 ubLoop;
+	UINT16 ubLoop;
 	NPCQuoteInfo *		pNewArray;
 	
-	if ( ubNPC == NO_PROFILE )
+	if ( ubNPC == NO_PROFILE_U8 )
 	{
 		// we have some work to do...
 		// loop through all PCs, and refresh their copy of this record
@@ -681,7 +681,7 @@ BOOLEAN ReloadCivQuoteFileIfLoaded( UINT8 ubIndex )
 
 void ShutdownNPCQuotes( void )
 {
-	UINT8 ubLoop;
+	UINT16 ubLoop;
 
 	for ( ubLoop = 0; ubLoop < NUM_PROFILES; ubLoop++ )
 	{
@@ -716,7 +716,7 @@ void ShutdownNPCQuotes( void )
 
 BOOLEAN ReloadAllQuoteFiles( void )
 {
-	for ( UINT8 ubProfile = 0; ubProfile < NUM_PROFILES; ubProfile++ )
+	for ( UINT16 ubProfile = 0; ubProfile < NUM_PROFILES; ubProfile++ )
 	{
 		if ( gMercProfiles[ubProfile].Type == PROFILETYPE_RPC ||
 			gMercProfiles[ubProfile].Type == PROFILETYPE_NPC )
@@ -1620,7 +1620,7 @@ UINT8 NPCConsiderQuote( UINT8 ubNPC, UINT8 ubMerc, UINT8 ubApproach, UINT8 ubQuo
 	UINT32								uiDay;
 	BOOLEAN								fTrue;
 
-	if ( ubNPC == NO_PROFILE )
+	if ( ubNPC == NO_PROFILE_U8 )
 	{
 		pNPCProfile = NULL;
 	}
@@ -1635,7 +1635,7 @@ UINT8 NPCConsiderQuote( UINT8 ubNPC, UINT8 ubMerc, UINT8 ubApproach, UINT8 ubQuo
 	pNPCQuoteInfo = &(pNPCQuoteInfoArray[ubQuoteNum]);
 
 	#ifdef JA2TESTVERSION
-		if ( ubNPC != NO_PROFILE && ubMerc != NO_PROFILE )
+		if ( ubNPC != NO_PROFILE_U8 && ubMerc != NO_PROFILE_U8 )
 		{
 			NpcRecordLoggingInit( ubNPC, ubMerc, ubQuoteNum, ubApproach );
 		}
@@ -1874,7 +1874,7 @@ void ResetOncePerConvoRecordsForAllNPCsInLoadedSector( void )
 		return;
 	}
 
-	for ( UINT8 IDnpc = 0; IDnpc < NUM_PROFILES; ++IDnpc )
+	for ( UINT16 IDnpc = 0; IDnpc < NUM_PROFILES; ++IDnpc )
 	{	
 		if ( gMercProfiles[IDnpc].Type == PROFILETYPE_RPC ||
 			gMercProfiles[IDnpc].Type == PROFILETYPE_NPC )
@@ -3234,8 +3234,13 @@ BOOLEAN LoadNPCInfoFromSavedGameFile( HWFILE hFile, UINT32 uiSaveGameVersion )
 	// If we are trying to restore a saved game prior to version 44, use the
 	// MAX_NUM_SOLDIERS, else use NUM_PROFILES.  Dave used the wrong define!
 	// Verion 111 increased NUM_PROFILES from 170 to 255
-	if( uiSaveGameVersion >= 111 )
+	// Phase 4: PROFILE_2048_EXPANSION increased NUM_PROFILES from 255 to 2048 -
+	// NUM_PROFILES itself is now the live (2048) value, so versions between 111
+	// and PROFILE_2048_EXPANSION need their own tier at the old 255 size.
+	if( uiSaveGameVersion >= PROFILE_2048_EXPANSION )
 		uiNumberToLoad = NUM_PROFILES;
+	else if( uiSaveGameVersion >= 111 )
+		uiNumberToLoad = NUM_PROFILES_v255;
 	else if( uiSaveGameVersion >= 44 )
 		uiNumberToLoad = NUM_PROFILES_v111;
 	else
@@ -3394,7 +3399,7 @@ BOOLEAN LoadNPCInfoFromSavedGameFile( HWFILE hFile, UINT32 uiSaveGameVersion )
 
 	if ( uiSaveGameVersion < 88 )
 	{
-		RefreshNPCScriptRecord( NO_PROFILE, 5 ); // special pass-in value for "replace PC scripts"
+		RefreshNPCScriptRecord( NO_PROFILE_U8, 5 ); // special pass-in value for "replace PC scripts"
 		RefreshNPCScriptRecord( DARYL, 11 );
 		RefreshNPCScriptRecord( DARYL, 14 );
 		RefreshNPCScriptRecord( DARYL, 15 );
@@ -3532,8 +3537,14 @@ BOOLEAN LoadBackupNPCInfoFromSavedGameFile( HWFILE hFile, UINT32 uiSaveGameVersi
 	INT32		numBytesRead = 0;
 	INT8		padding;
 
-	if( guiCurrentSaveGameVersion >= STOMP12_SAVEGAME_DATATYPE_CHANGE )
+	// Phase 4: PROFILE_2048_EXPANSION increased NUM_PROFILES from 255 to 2048 -
+	// NUM_PROFILES itself is now the live (2048) value, so versions between
+	// STOMP12_SAVEGAME_DATATYPE_CHANGE and PROFILE_2048_EXPANSION need their
+	// own tier at the old 255 size.
+	if( guiCurrentSaveGameVersion >= PROFILE_2048_EXPANSION )
 		uiNumberOfProfilesToLoad = NUM_PROFILES;
+	else if( guiCurrentSaveGameVersion >= STOMP12_SAVEGAME_DATATYPE_CHANGE )
+		uiNumberOfProfilesToLoad = NUM_PROFILES_v255;
 	else
 		uiNumberOfProfilesToLoad = NUM_PROFILES_v111;
 
@@ -3968,7 +3979,7 @@ INT8 ConsiderCivilianQuotes( INT16 sSectorX, INT16 sSectorY, INT16 sSectorZ, BOO
 
 	for ( bLoop = 0; bLoop < NUM_NPC_QUOTE_RECORDS; bLoop++ )
 	{
-		if ( NPCConsiderQuote( NO_PROFILE, NO_PROFILE, 0, bLoop, 0, pCivQuoteInfoArray ) )
+		if ( NPCConsiderQuote( NO_PROFILE_U8, NO_PROFILE_U8, 0, bLoop, 0, pCivQuoteInfoArray ) )
 		{
 			if ( fSetAsUsed )
 			{

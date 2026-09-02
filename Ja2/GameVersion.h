@@ -29,6 +29,9 @@ extern	CHAR16		zBuildInformation[256];
 //		Keeps track of the saved game version.	Increment the saved game version whenever 
 //	you will invalidate the saved game file
 
+#define			ENLARGED_OPINIONS_2048							189 // Phase 6: MERCPROFILESTRUCT::bMercOpinion grown from NUMBER_OF_OPINIONS_v255(255) to NUM_PROFILES(2048) entries, same recipe ENLARGED_OPINIONS(141) used to grow it 75 -> 255
+#define			PHASE6_PROFILE_FIELDS_WIDEN						188 // Phase 6: remaining profile-adjacent fields widened from UINT8/INT8 (VEHICLETYPE::ubProfileID, PlayerStrategicSoldier::ubProfileID, MERCPROFILESTRUCT::bBuddy[]/bHated[])
+#define			PROFILE_2048_EXPANSION							187 // Before this, NUM_PROFILES was capped at 255 (SOLDIERTYPE ubProfile changed from UINT8 -> UINT16, mirroring INCREASED_TEAMSIZES's ubID change)
 #define			INCREASED_TEAMSIZES								186 // Asdow: SOLDIERTYPE ubID changed from UINT8 -> UINT16
 #define			MERC_PROFILE_INSERTION_DATA					    185 // Bigmap support for AddProfileToMap function
 #define			GROWTH_MODIFIERS								184
@@ -113,7 +116,7 @@ extern	CHAR16		zBuildInformation[256];
 #define			AP100_SAVEGAME_DATATYPE_CHANGE					105	// Before this, we didn't have the 100AP structure changes
 #define			NIV_SAVEGAME_DATATYPE_CHANGE					102	// Before this, we used the old structure system
 
-#define			SAVE_GAME_VERSION								INCREASED_TEAMSIZES
+#define			SAVE_GAME_VERSION								ENLARGED_OPINIONS_2048
 
 //#define RUSSIANGOLD
 #ifdef __cplusplus

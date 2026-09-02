@@ -929,7 +929,7 @@ void HandleMoraleEvent( SOLDIERTYPE *pSoldier, INT8 bMoraleEvent, INT16 sMapX, I
 				{
 					pProfile = &(gMercProfiles[ pTeamSoldier->ubProfile ]);
 
-					if (HATED_MERC( pProfile, pSoldier->ubProfile ))
+					if (HATED_MERC( pProfile, static_cast<int>(pSoldier->ubProfile) )) // Phase 6: bHated[] widened to ProfileID[5]
 					{
 						// yesss!
 						HandleMoraleEventForSoldier( pTeamSoldier, MORALE_HATED_DIED );
@@ -963,7 +963,7 @@ void HandleMoraleEvent( SOLDIERTYPE *pSoldier, INT8 bMoraleEvent, INT16 sMapX, I
 							}
 						}
 						
-						if (BUDDY_MERC( pProfile, pSoldier->ubProfile ))
+						if (BUDDY_MERC( pProfile, static_cast<int>(pSoldier->ubProfile) )) // Phase 6: bBuddy[] widened to ProfileID[5]
 						{
 							// oh no!	buddy died!
 							HandleMoraleEventForSoldier( pTeamSoldier, MORALE_BUDDY_DIED );
@@ -1428,35 +1428,35 @@ void HandleSnitchCheck( void )
 			if ( MercThinksDeathRateTooHigh( pSoldier->ubProfile ) )
 			{
 				// too high, inform
-				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_DEATH_RATE, snitcheventvector );
+				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_DEATH_RATE, snitcheventvector );
 			}
 
 			// check his morale vs. his morale tolerance once/day (ignores buddies!)
 			if ( MercThinksHisMoraleIsTooLow( pSoldier ) )
 			{
 				// too low, inform
-				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_LOW_MORALE, snitcheventvector );
+				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_LOW_MORALE, snitcheventvector );
 			}
 
 			// check his opinion about player's reputation
 			if ( MercThinksBadReputationTooHigh( pSoldier->ubProfile ) )
 			{
 				// too high, inform
-				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_REPUTATION, snitcheventvector );
+				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_REPUTATION, snitcheventvector );
 			}
 
 			// check his opinion about player activity
 			if ( MercThinksPlayerIsInactiveTooLong( pSoldier->ubProfile ) )
 			{
 				// player inactive, inform
-				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_PROGRESS, snitcheventvector );
+				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_PROGRESS, snitcheventvector );
 			}
 
 			// check if player owes him money
 			if ( MercIsOwedTooMuchMoney( pSoldier->ubProfile ) )
 			{
 				// player owes him money, inform
-				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_OWED_MONEY, snitcheventvector );
+				RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_OWED_MONEY, snitcheventvector );
 			}
 
 			// check if contract is running out, and will not renew
@@ -1468,7 +1468,7 @@ void HandleSnitchCheck( void )
 					// Only do this if they don't want to renew.....
 					if ( !(pSoldier->flags.fSignedAnotherContract) && !WillMercRenew( pSoldier, FALSE ) )
 					{
-						RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE, fSameGroupOnly, SNITCH_GONNA_QUIT, snitcheventvector );
+						RememberSnitchableEvent( pSoldier->ubProfile, NO_PROFILE_U8, fSameGroupOnly, SNITCH_GONNA_QUIT, snitcheventvector );
 					}
 				}
 			}
@@ -1511,7 +1511,7 @@ void HandleSnitchesReports( std::vector<SnitchEvent>& aVec )
 			if (fSleepingSnitch)
 				TacticalCharacterDialogueWithSpecialEvent(pSnitch, 0, DIALOGUE_SPECIAL_EVENT_SLEEP, 0, 0);
 
-			SnitchTacticalCharacterDialogue( pSnitch, 0, SNITCH_INTRODUCTION, NO_PROFILE, NO_PROFILE );
+			SnitchTacticalCharacterDialogue( pSnitch, 0, SNITCH_INTRODUCTION, NO_PROFILE_U8, NO_PROFILE_U8 );
 
 			// process all reports by the same snitch in row
 			for ( size_t bCounter2 = bCounter; bCounter2 < size; ++bCounter2 )
@@ -1577,7 +1577,7 @@ void RememberSnitchableEvent( UINT8 ubTargetProfile, UINT8 ubSecondaryTargetProf
 		// skip past ourselves and all inactive mercs
 		if ( ProfileHasSkillTrait( ubSnitchProfile, SNITCH_NT ) &&
 			ubSnitchProfile != ubTargetProfile && ubSnitchProfile != ubSecondaryTargetProfile
-			&& pSnitch->bActive && ubSnitchProfile != NO_PROFILE &&
+			&& pSnitch->bActive && ubSnitchProfile != NO_PROFILE_U8 &&
 			!(pSnitch->bAssignment == IN_TRANSIT ||
 			pSnitch->bAssignment == ASSIGNMENT_DEAD ||
 			pSnitch->bAssignment == ASSIGNMENT_POW) )

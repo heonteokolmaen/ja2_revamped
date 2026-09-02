@@ -50,7 +50,7 @@ extern SECTOR_EXT_DATA	SectorExternalData[256][4];
 //void DropOffItemsInMeduna( UINT8 ubOrderNum );
 
 /*
-// WANNE: Dieser Code wird nicht mehr ausgeführt. Es gibt jetzt das PostalService.cpp::DeliverShipment()
+// WANNE: Dieser Code wird nicht mehr ausgefï¿½hrt. Es gibt jetzt das PostalService.cpp::DeliverShipment()
 // In der Methode DeliverShipment() fehlt eine ganze Menge (PABLO Quests, ...)
 void BobbyRayPurchaseEventCallback( UINT8 ubOrderID )
 {
@@ -1218,7 +1218,7 @@ void HandleRaidEventPlanning()
 				continue;
 			
 			// if the lair has been cleared, way less growth
-			if ( CheckFact(FACT_BLOODCAT_LAIR_CLEANED, NO_PROFILE) )
+			if ( CheckFact(FACT_BLOODCAT_LAIR_CLEANED, NO_PROFILE_U8) )
 				personnelgain[raidtype] += gGameExternalOptions.gRaidReplenish_BaseValue;
 			else
 				personnelgain[raidtype] += 3 * gGameExternalOptions.gRaidReplenish_BaseValue;

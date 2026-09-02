@@ -337,7 +337,7 @@ BOOLEAN AddCharacterToSquad( SOLDIERTYPE *pCharacter, INT8 bSquadValue )
 				INT32 iCounter = 0;
 				for( iCounter = 0; iCounter < ubNumberOfVehicles ; iCounter++ )
 				{
-					if(pVehicleList[ iCounter ].ubProfileID == pCharacter->ubProfile)
+					if(static_cast<int>(pVehicleList[ iCounter ].ubProfileID) == pCharacter->ubProfile) // TODO(Phase 4): vehicle ubProfileID is still UINT8 (Vehicles.h, saved vehicle data) - widen alongside the save format
 						break;
 				}
 				//AddPlayerToGroup( pVehicleList[iCounter].ubMovementGroup, pCharacter	);
@@ -1699,7 +1699,7 @@ void CheckSquadMovementGroups( void )
 					INT32 iCounter = 0;
 					for (iCounter = 0; iCounter < ubNumberOfVehicles; iCounter++)
 					{
-						if (pVehicleList[iCounter].ubProfileID == Squad[iSquad][iSoldier]->ubProfile)
+						if (static_cast<int>(pVehicleList[iCounter].ubProfileID) == Squad[iSquad][iSoldier]->ubProfile) // TODO(Phase 4): vehicle ubProfileID is still UINT8 (Vehicles.h, saved vehicle data) - widen alongside the save format
 							break;
 					}
 					Squad[iSquad][iSoldier]->ubGroupID = pVehicleList[iCounter].ubMovementGroup;

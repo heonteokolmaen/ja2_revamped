@@ -3966,7 +3966,7 @@ void INVRenderItem( UINT32 uiBuffer, SOLDIERTYPE * pSoldier, OBJECTTYPE  *pObjec
 			}
 
 			// Flugente: heat displays
-			if ( OVERHEATING_MAX_TEMPERATURE > 0 )
+			if constexpr ( OVERHEATING_MAX_TEMPERATURE > 0 ) // constant-expression condition trips C4127/C2220 under /WX
 			{
 				// Flugente: display condition of food if it can decay
 				if ( UsingFoodSystem() && Item[pObject->usItem].foodtype > 0 )
@@ -7218,7 +7218,7 @@ void RenderItemDescriptionBox( )
 			SetFontForeground( FONT_BLACK );
 			SetFontShadow( ITEMDESC_FONTSHADOW2 );
 			// Caliber
-			if ( ItemHasFingerPrintID(gpItemDescObject->usItem) && (*gpItemDescObject)[gubItemDescStatusIndex]->data.ubImprintID < NO_PROFILE )
+			if ( ItemHasFingerPrintID(gpItemDescObject->usItem) && (*gpItemDescObject)[gubItemDescStatusIndex]->data.ubImprintID != NO_PROFILE_U8 && (*gpItemDescObject)[gubItemDescStatusIndex]->data.ubImprintID != GENERIC_MERC_IMPRINT_ID )
 			{
 				// Fingerprint ID
 				swprintf( pStr, L"%s %s (%s)", AmmoCaliber[ Weapon[ gpItemDescObject->usItem ].ubCalibre ], WeaponType[ Weapon[ gpItemDescObject->usItem ].ubWeaponType ], gMercProfiles[ (*gpItemDescObject)[gubItemDescStatusIndex]->data.ubImprintID ].zNickname );
@@ -7321,7 +7321,7 @@ void RenderItemDescriptionBox( )
 					// Flugente: display condition of food if it can decay
 					else if ( UsingFoodSystem() && Item[gpItemDescObject->usItem].foodtype > 0 )
 					{
-						if ( OVERHEATING_MAX_TEMPERATURE > 0 )
+						if constexpr ( OVERHEATING_MAX_TEMPERATURE > 0 ) // constant-expression condition trips C4127/C2220 under /WX
 						{
 							FLOAT condition = (*gpItemDescObject)[0]->data.bTemperature / OVERHEATING_MAX_TEMPERATURE;
 
@@ -12740,7 +12740,7 @@ void GetHelpTextForItem( STR16 pzStr, OBJECTTYPE *pObject, SOLDIERTYPE *pSoldier
 
 
 		// Fingerprint ID (Soldier Name)
-		if ( ItemHasFingerPrintID(pObject->usItem) && (*pObject)[subObject]->data.ubImprintID < NO_PROFILE )
+		if ( ItemHasFingerPrintID(pObject->usItem) && (*pObject)[subObject]->data.ubImprintID != NO_PROFILE_U8 && (*pObject)[subObject]->data.ubImprintID != GENERIC_MERC_IMPRINT_ID )
 		{
 			CHAR16		pStr2[20];
 			swprintf( pStr2, L" [%s]", gMercProfiles[ (*pObject)[subObject]->data.ubImprintID ].zNickname );

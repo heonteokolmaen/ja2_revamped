@@ -475,9 +475,9 @@ INT32 HandleItem( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bLevel, UINT16 usHa
 			// imprinted value is profile for mercs & NPCs and NO_PROFILE + 1 for generic dudes
 			if (pSoldier->ubProfile != NO_PROFILE)
 			{
-				if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != pSoldier->ubProfile )
+				if ( static_cast<int>(pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID) != pSoldier->ubProfile ) // TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed
 				{
-					if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID == NO_PROFILE )
+					if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID == NO_PROFILE_U8 )
 					{
 						// first shot using "virgin" gun... set imprint ID
 						pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID = pSoldier->ubProfile;
@@ -515,11 +515,11 @@ INT32 HandleItem( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bLevel, UINT16 usHa
 			else
 			{
 				// guaranteed not to be controlled by the player, so no feedback required
-				if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != (NO_PROFILE + 1) )
+				if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != GENERIC_MERC_IMPRINT_ID )
 				{
-					if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID == NO_PROFILE )
+					if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID == NO_PROFILE_U8 )
 					{
-						pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID = (NO_PROFILE + 1);
+						pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID = GENERIC_MERC_IMPRINT_ID;
 					}
 					else
 					{
@@ -4818,7 +4818,7 @@ BOOLEAN VerifyGiveItem( SOLDIERTYPE *pSoldier, SOLDIERTYPE **ppTargetSoldier )
 
 	sGridNo		= pSoldier->aiData.sPendingActionData2;
 	ubDirection = pSoldier->aiData.bPendingActionData3;
-	ubTargetMercID = static_cast<UINT16>( pSoldier->aiData.uiPendingActionData4 );
+	ubTargetMercID = static_cast<int>( pSoldier->aiData.uiPendingActionData4 );
 
 	usSoldierIndex = WhoIsThere2( sGridNo, pSoldier->pathing.bLevel );
 
@@ -6987,10 +6987,10 @@ BOOLEAN CanPlayerUseRocketRifle( SOLDIERTYPE *pSoldier, BOOLEAN fDisplay )
 		// imprinted value is profile for mercs & NPCs and NO_PROFILE + 1 for generic dudes
 		if (pSoldier->ubProfile != NO_PROFILE)
 		{
-			if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != pSoldier->ubProfile )
+			if ( static_cast<int>(pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID) != pSoldier->ubProfile ) // TODO: ubImprintID is still UINT8 (Item Types.h, saved item data) - widen deliberately if needed
 			{
 				// NOT a virgin gun...
-				if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != NO_PROFILE )
+				if ( pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.ubImprintID != NO_PROFILE_U8 )
 				{
 					// access denied!
 					if (pSoldier->bTeam == gbPlayerNum)

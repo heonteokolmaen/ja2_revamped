@@ -140,7 +140,7 @@ INT8 HireMerc( MERC_HIRE_STRUCT *pHireMerc)
 
 	// BUILD STRUCTURES
 	MercCreateStruct.initialize();
-	MercCreateStruct.ubProfile						= ubCurrentSoldier;
+	MercCreateStruct.ubProfile						= static_cast<int>(ubCurrentSoldier); // TODO: ubCurrentSoldier sourced from MERC_HIRE_STRUCT::ubProfileID, still UINT8 - widen deliberately if needed
 	MercCreateStruct.fPlayerMerc					= TRUE;
 	MercCreateStruct.sSectorX							= pHireMerc->sSectorX;
 	MercCreateStruct.sSectorY							= pHireMerc->sSectorY;
@@ -1061,8 +1061,8 @@ void UpdateJerryMiloInInitialSector()
 			pSoldier->fWaitingToGetupFromJA25Start = TRUE;
 			pSoldier->fIgnoreGetupFromCollapseCheck = TRUE;
 
-			//pSoldier->ubStrategicInsertionCode = INSERTION_CODE_GRIDNO; //to by³o wy³¹czone
-			//pSoldier->usStrategicInsertionData = GetInitialHeliGridNo( ); //to by³o wy³¹czone
+			//pSoldier->ubStrategicInsertionCode = INSERTION_CODE_GRIDNO; //to byï¿½o wyï¿½ï¿½czone
+			//pSoldier->usStrategicInsertionData = GetInitialHeliGridNo( ); //to byï¿½o wyï¿½ï¿½czone
 
 			RESETTIMECOUNTER( pSoldier->GetupFromJA25StartCounter, gsInitialHeliRandomTimes[6] + 800 + Random( 400 ) );
 

@@ -889,7 +889,7 @@ void	ChangeWeather( UINT8 aSector, UINT8 aType )
 		}
 
 		// Flugente: additional dialogue
-		AdditionalTacticalCharacterDialogue_AllInSector( SECTORX( aSector ), SECTORY( aSector ), 0, NO_PROFILE, ADE_WEATHERCHANGE, aType );
+		AdditionalTacticalCharacterDialogue_AllInSector( SECTORX( aSector ), SECTORY( aSector ), 0, NO_PROFILE_U8, ADE_WEATHERCHANGE, aType );
 
 		// First turn off whatever weather it is, then turn on the requested weather
 		SectorInfo[aSector].usWeather = aType;

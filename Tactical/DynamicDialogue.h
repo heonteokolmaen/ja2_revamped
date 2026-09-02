@@ -368,8 +368,8 @@ typedef struct OpinionEvent
 {
 	OpinionEvent( ) :
 	ubEventId( 0 ),
-	ubProfileComplainant( NO_PROFILE ),
-	ubProfileCause( NO_PROFILE ),
+	ubProfileComplainant( NO_PROFILE_U8 ),
+	ubProfileCause( NO_PROFILE_U8 ),
 	usSector( 0 )
 	{}
 
@@ -387,7 +387,7 @@ typedef struct DynamicOpinionSpeechEvent_EventData
 	event( ),
 	usId( 0 ),
 	usPriority( 0 ),
-	ubProfileINTERJECTOR( NO_PROFILE )
+	ubProfileINTERJECTOR( NO_PROFILE_U8 )
 	{}
 
 	OpinionEvent event;				// the event that this is all about
@@ -412,7 +412,7 @@ typedef struct DynamicOpinionSpeechEvent
 	usStarttime( 0 ),
 	ubEventType( DOST_INTERJECTOR_NOTHING ),
 	usQueueNumber( 0 ),
-	usSpeaker( NO_PROFILE ),
+	usSpeaker( NO_PROFILE_U8 ), // usSpeaker is UINT8 despite the "us" prefix
 	usSide( DOST_POSITION_LEFT ),
 	usNumonside( 0 )
 	{}

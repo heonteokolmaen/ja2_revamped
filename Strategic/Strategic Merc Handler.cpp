@@ -888,7 +888,10 @@ void UpdateBuddyAndHatedCounters( void )
 {
 	SoldierID bMercID, bOtherID, bLastTeamID;
 	INT32 iLoop;
-	UINT8 ubOtherProfileID;
+	ProfileID ubOtherProfileID;	// Phase 6: widened UINT8 -> ProfileID (was silently narrowing pOtherSoldier->ubProfile at assignment).
+	// Note: bMercOpinion[] was a fixed 255-slot array (NUMBER_OF_OPINIONS_v255), independently widened in a
+	// later Phase 6 pass to NUM_PROFILES(2048), same recipe as everything else here. OKToCheckOpinion()
+	// already gates every bMercOpinion[] access below and now permits the full range.
 	SOLDIERTYPE *pSoldier;
 	SOLDIERTYPE *pOtherSoldier;
 	MERCPROFILESTRUCT *pProfile;

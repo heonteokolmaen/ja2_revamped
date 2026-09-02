@@ -280,7 +280,7 @@ INT32 GetFreeNPCSave( void )
 
 	for(uiCount=0; uiCount < guiNumNPCSaves; uiCount++)
 	{
-		if(( gNPCSaveData[uiCount].ubProfile == NO_PROFILE ) )
+		if(( gNPCSaveData[uiCount].ubProfile == NO_PROFILE_U8 ) )
 			return( (INT32)uiCount );
 	}
 
@@ -296,7 +296,7 @@ void RecountNPCSaves( void )
 
 	for(uiCount=guiNumNPCSaves-1; (uiCount >=0) ; uiCount--)
 	{
-		if( ( gNPCSaveData[uiCount].ubProfile != NO_PROFILE ) )
+		if( ( gNPCSaveData[uiCount].ubProfile != NO_PROFILE_U8 ) )
 		{
 			guiNumNPCSaves=(UINT32)(uiCount+1);
 			break;
@@ -358,7 +358,7 @@ BOOLEAN BeginMeanwhile( UINT8 ubMeanwhileID )
 	// Set NO_PROFILE info....
 	for ( cnt = 0; cnt < MAX_MEANWHILE_PROFILES; cnt++ )
 	{
-		gNPCSaveData[ cnt ].ubProfile = NO_PROFILE;
+		gNPCSaveData[ cnt ].ubProfile = NO_PROFILE_U8;
 	}
 
 	return( TRUE );

@@ -251,7 +251,7 @@ BOOLEAN EnterAimFacialIndex()
 
 void ExitAimFacialIndex()
 {
-	UINT8	i;
+	UINT16	i;
 
 	RemoveAimDefaults();
 

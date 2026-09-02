@@ -873,7 +873,7 @@ void ChooseWeaponForSoldierCreateStruct( SOLDIERCREATE_STRUCT *pp, INT8 bWeaponC
 
 				if (ItemHasFingerPrintID(usGunIndex))
 				{
-					pp->Inv[ i ][0]->data.ubImprintID = (NO_PROFILE + 1);
+					pp->Inv[ i ][0]->data.ubImprintID = GENERIC_MERC_IMPRINT_ID;
 				}
 
 				break;
@@ -951,7 +951,7 @@ void ChooseWeaponForSoldierCreateStruct( SOLDIERCREATE_STRUCT *pp, INT8 bWeaponC
 	// Rocket Rifles must come pre-imprinted, in case carrier gets killed without getting a shot off
 	if (ItemHasFingerPrintID(usGunIndex))
 	{
-		pp->Inv[ HANDPOS ][0]->data.ubImprintID = (NO_PROFILE + 1);
+		pp->Inv[ HANDPOS ][0]->data.ubImprintID = GENERIC_MERC_IMPRINT_ID;
 	}
 
 	DebugMsg (TOPIC_JA2,DBG_LEVEL_3,"ChooseWeaponForSoldierCreateStruct: Gun Created");

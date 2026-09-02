@@ -36,7 +36,7 @@ class OBJECTTYPE;
 class SOLDIERTYPE;
 
 // SB: new map version, with map dimensions added
-#define MAJOR_MAP_VERSION		8.0		// 7.0 -> 8.0 Due to increased teamsizes. 
+#define MAJOR_MAP_VERSION		9.0		// 8.0 -> 9.0 Due to profile 2048 expansion (SOLDIERCREATE_STRUCT ubProfile changed from UINT8 -> ProfileID, same shape as the 7.0 -> 8.0 teamsize change)
 //Current minor map version updater.
 #define MINOR_MAP_OVERHEATING		28		// 27 -> 28: Flugente:: increased to 28 because of included weapon overheated and tripwire feature. See ObjectClass for the new Tags!
 //#define MINOR_MAP_VERSION		29		// 28 -> 29: increased range of roomnumbers to full UINT16 by DBrot

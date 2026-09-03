@@ -2085,16 +2085,12 @@ STR16 wszSelType[6] = {
 
 //---
 
-CHAR16  gszAimPages[ 6 ][ 20 ] =
+// Pagination fix: was 6 hardcoded "Cтp. X/Y" strings covering only up to 3
+// pages (120 mercs) - now a single format template, filled in with the
+// actual page number/count at runtime, so it scales to any roster size.
+CHAR16  gszAimPages[ 1 ][ 20 ] =
 {
-	L"Cтp. 1/2", //0
-	L"Cтp. 2/2",
-	
-	L"Cтp. 1/3",
-	L"Cтp. 2/3",
-	L"Cтp. 3/3",
-	
-	L"Cтp. 1/1", //5
+	L"Cтp. %d/%d", //0
 };
 
 // by Jazz

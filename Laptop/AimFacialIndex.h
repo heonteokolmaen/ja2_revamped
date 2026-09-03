@@ -27,7 +27,7 @@ BOOLEAN RenderAimFacialIndex();
 
 BOOLEAN DisplayAimFIMugShot();
 
-extern UINT8 START_MERC;
+extern UINT16 START_MERC;	// pagination fix: was UINT8 - page-start offsets past 255 (page 7+ at 40/page) didn't fit
 
 #endif
 

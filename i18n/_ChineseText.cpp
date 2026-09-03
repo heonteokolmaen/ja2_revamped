@@ -2085,16 +2085,12 @@ STR16 wszSelType[6] = {
 
 //---
 
-CHAR16  gszAimPages[ 6 ][ 20 ] =
+// Pagination fix: was 6 hardcoded "页 X/Y" strings covering only up to 3
+// pages (120 mercs) - now a single format template, filled in with the
+// actual page number/count at runtime, so it scales to any roster size.
+CHAR16  gszAimPages[ 1 ][ 20 ] =
 {
-	L"页 1/2", //0
-	L"页 2/2",
-	
-	L"页 1/3",
-	L"页 2/3",
-	L"页 3/3",
-	
-	L"页 1/1", //5
+	L"页 %d/%d", //0
 };
 
 // by Jazz:

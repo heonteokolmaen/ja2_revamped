@@ -27,9 +27,12 @@ BOOLEAN		gAimProfiles[ NUM_PROFILES ];
 
 #define		AIM_FI_NUM_MUGSHOTS_X		8
 #define		AIM_FI_NUM_MUGSHOTS_Y		5
+// Pagination fix: mercs shown per page of the mugshot grid, and the single
+// place that number should be computed from now on.
+#define		AIM_FI_MERCS_PER_PAGE		(AIM_FI_NUM_MUGSHOTS_X * AIM_FI_NUM_MUGSHOTS_Y)
 
-UINT8 START_MERC =0;
-UINT8 END_MERC =0;
+UINT16 START_MERC =0;	// pagination fix: was UINT8 - page-start offsets past 255 didn't fit
+UINT16 END_MERC =0;	// pagination fix: was UINT8 (unused elsewhere, widened for consistency)
 
 #define		AIM_FI_PORTRAIT_WIDTH		52
 #define		AIM_FI_PORTRAIT_HEIGHT	48
@@ -84,32 +87,48 @@ void GameInitAimFacialIndex()
 
 }
 
-/// Calculates the needed string for the page button based on number of mercs
-/// and currently displayed page.
-static STR16 GetPageButtonText() 
+/// Pagination fix: total number of mugshot-grid pages needed for the current
+/// roster size. Always at least 1, even with zero/one page of mercs.
+static UINT16 GetAimFiNumPages()
 {
-	const int MERCS_PER_PAGE = AIM_FI_NUM_MUGSHOTS_X * AIM_FI_NUM_MUGSHOTS_Y;
+	UINT16 numPages = (MAX_NUMBER_MERCS + AIM_FI_MERCS_PER_PAGE - 1) / AIM_FI_MERCS_PER_PAGE;
+	return (numPages == 0) ? 1 : numPages;
+}
 
-	int baseTextIndex;
-	// Display three pages of mercs (strings from gszAimPages[2] to gszAimPages[4])
-	if (MAX_NUMBER_MERCS > MERCS_PER_PAGE * 2)
-		baseTextIndex = 2;
-	// Display two pages of mercs (strings from gszAimPages[0] to gszAimPages[1])
-	else if (MAX_NUMBER_MERCS > MERCS_PER_PAGE)
-	{
-		Assert(START_MERC < MERCS_PER_PAGE * 2);
-		baseTextIndex = 0;
-	}
-	// Display one page of mercs (string gszAimPages[5])
+/// Pagination fix: moves START_MERC to the next (or previous) page, wrapping
+/// around at either end. Replaces the old hardcoded 0/40/80 three-stop cycle,
+/// which silently stopped advancing once the roster passed 120 mercs.
+static void AdvanceAimFiPage(BOOLEAN fForward)
+{
+	UINT16 numPages = GetAimFiNumPages();
+	UINT16 curPage = START_MERC / AIM_FI_MERCS_PER_PAGE;
+
+	if (fForward)
+		curPage = (UINT16)((curPage + 1) % numPages);
 	else
-	{
-		Assert(START_MERC < MERCS_PER_PAGE);
-		baseTextIndex = 5;
-	}
+		curPage = (curPage == 0) ? (UINT16)(numPages - 1) : (UINT16)(curPage - 1);
 
-	int currentPage = START_MERC / MERCS_PER_PAGE;
-	int stringIndex = baseTextIndex + currentPage;
-	return gszAimPages[ stringIndex ];
+	START_MERC = (UINT16)(curPage * AIM_FI_MERCS_PER_PAGE);
+}
+
+/// Calculates the needed string for the page button based on number of mercs
+/// and currently displayed page. Pagination fix: this used to look up one of
+/// six hardcoded "Page X/Y" strings (gszAimPages[0..5]), which only covered
+/// rosters of up to 3 pages (120 mercs) - past that it just stopped updating.
+/// Now formats the page number/count directly, so it scales to any roster
+/// size. gszAimPages now holds a single "Page %d/%d"-style template string
+/// per language instead of six literal ones.
+static STR16 GetPageButtonText()
+{
+	static CHAR16 sPageButtonText[20];
+
+	UINT16 numPages = GetAimFiNumPages();
+	UINT16 currentPage = (UINT16)((START_MERC / AIM_FI_MERCS_PER_PAGE) + 1);
+
+	Assert(START_MERC < numPages * AIM_FI_MERCS_PER_PAGE);
+
+	swprintf(sPageButtonText, gszAimPages[0], currentPage, numPages);
+	return sPageButtonText;
 }
 
 void BtnNewProfilesButtonCallback(GUI_BUTTON *btn,INT32 reason)
@@ -132,21 +151,7 @@ void BtnNewProfilesButtonCallback(GUI_BUTTON *btn,INT32 reason)
 				gAimProfiles[i] = TRUE;
 			}
 
-			if ( START_MERC == 0 )
-			{
-				START_MERC = 40;
-			}	
-			else if ( START_MERC == 40 )
-			{
-				if ( MAX_NUMBER_MERCS > 80 )
-					START_MERC = 80;
-				else
-					START_MERC = 0;
-			}
-			else
-			{
-				START_MERC = 0;
-			}
+			AdvanceAimFiPage(TRUE);
 
 			ExitAimFacialIndex();
 			EnterAimFacialIndex();
@@ -168,12 +173,19 @@ BOOLEAN EnterAimFacialIndex()
 	UINT16		usPosX, usPosY, x,y;
 	STR				sFaceLoc = "FACES\\";
 	char			sTemp[100];
-	
+
 	UINT8 p = 0;
 
-	for(i=0; i<MAX_NUMBER_MERCS; i++)
+	// Pagination fix: this loop covers the whole roster (up to MAX_NUMBER_MERCS,
+	// now as large as NUM_PROFILES), so it needs its own wide loop variable -
+	// reusing the UINT8 `i` below (which is fine for its own 40-slot mugshot
+	// loop) would wrap back to 0 at 256 and hang here forever past that size.
 	{
-		gAimProfiles[i] = TRUE;
+		UINT16 uiProfileInitIndex;
+		for(uiProfileInitIndex=0; uiProfileInitIndex<MAX_NUMBER_MERCS; uiProfileInitIndex++)
+		{
+			gAimProfiles[uiProfileInitIndex] = TRUE;
+		}
 	}
 
 	// load the Portait graphic and add it
@@ -518,7 +530,7 @@ void HandleAimFacialIndexKeyBoardInput()
 					break;
 				case LEFTARROW:
 				case 'a':
-					if ( MAX_NUMBER_MERCS > (AIM_FI_NUM_MUGSHOTS_X * AIM_FI_NUM_MUGSHOTS_Y) )
+					if ( MAX_NUMBER_MERCS > AIM_FI_MERCS_PER_PAGE )
 					{
 						// previous page
 						for(i=0; i<MAX_NUMBER_MERCS; i++)
@@ -526,29 +538,15 @@ void HandleAimFacialIndexKeyBoardInput()
 							gAimProfiles[i] = TRUE;
 						}
 
-						if ( START_MERC == 40 )
-						{
-							START_MERC = 0;
-						}	
-						else if ( START_MERC == 0 )
-						{
-							if ( MAX_NUMBER_MERCS > 80 )
-								START_MERC = 80;
-							else
-								START_MERC = 40;
-						}
-						else
-						{
-							START_MERC = 40;
-						}
-					
+						AdvanceAimFiPage(FALSE);
+
 						ExitAimFacialIndex();
 						EnterAimFacialIndex();
 					}
 					break;
 				case RIGHTARROW:
 				case 'd':
-					if ( MAX_NUMBER_MERCS > (AIM_FI_NUM_MUGSHOTS_X * AIM_FI_NUM_MUGSHOTS_Y) )
+					if ( MAX_NUMBER_MERCS > AIM_FI_MERCS_PER_PAGE )
 					{
 						// next page
 						for(i=0; i<MAX_NUMBER_MERCS; i++)
@@ -556,22 +554,8 @@ void HandleAimFacialIndexKeyBoardInput()
 							gAimProfiles[i] = TRUE;
 						}
 
-						if ( START_MERC == 0 )
-						{
-							START_MERC = 40;
-						}	
-						else if ( START_MERC == 40 )
-						{
-							if ( MAX_NUMBER_MERCS > 80 )
-								START_MERC = 80;
-							else
-								START_MERC = 0;
-						}
-						else
-						{
-							START_MERC = 0;
-						}
-					
+						AdvanceAimFiPage(TRUE);
+
 						ExitAimFacialIndex();
 						EnterAimFacialIndex();
 					}

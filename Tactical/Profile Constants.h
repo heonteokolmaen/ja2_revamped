@@ -77,13 +77,13 @@
 //      Memory cost verified: bMercOpinion alone goes from ~522KB to ~4.19MB
 //      total across gMercProfiles[2048] - trivial.
 //
-// NOT STARTED:
-//   1. Strategic/Rebel Command.cpp - mercProfileId bit-packed to 8 bits in a
-//      UINT32 wire format (Serialise/DeserialiseMission{First,Second}Event).
-//      Widening this one isn't mechanical - it means reshuffling the bit
-//      layout (mission/duration/extraBits share the other 24 bits).
+// DONE (item 1, PHASE 9 - see below):
+//   1. Strategic/Rebel Command.cpp - mercProfileId was bit-packed to 8 bits in
+//      a UINT32 wire format (Serialise/DeserialiseMission{First,Second}Event).
+//      Repartitioned to 11 bits (full 0-2047 range) by shrinking missionId to
+//      5 bits. See PHASE 9 for full details.
 //
-// DONE (item 5, this session - NOT yet committed, see PHASE 8 below):
+// DONE (item 5, PHASE 8 - see below):
 //   5. Laptop/mercs.cpp:396 - the whole MERC-hiring-availability subsystem
 //      (gubMercArray, AimMercArray, gConditionsForMercAvailability::uiIndex)
 //      stored profile-ID-shaped values in its own UINT8 arrays/fields,
@@ -182,33 +182,48 @@
 //     slots are written as literal `<ProfilId>-1</ProfilId>` text, which now
 //     parses to 0xFFFF, not 255. Fixed to `!= 0xFFFF`.
 //
-// Found but deliberately NOT fixed (separate, larger, doesn't block the
-// current use case):
+// Found and since FIXED (was "deliberately NOT fixed" here, closed out in a
+// follow-up session - see PHASE 8 below):
 //   - Laptop/AimFacialIndex.cpp's mugshot-grid browser (the visual AIM member
-//     picker) pages through the roster via a hardcoded 3-state cycle
-//     (START_MERC only ever becomes 0, 40, or 80 - see the click handlers
-//     around lines 131-148/525-572), capping what that ONE screen can
-//     display at 120 mercs regardless of MAX_NUMBER_MERCS. Not a UINT8-width
-//     bug - START_MERC's actual runtime range (0/40/80) never needed
-//     widening. This is a real, separate UI limitation if the roster ever
-//     grows past ~120 simultaneously-available AIM mercs; needs its own
-//     pagination redesign (a loop/formula instead of the 3-way if/else),
-//     out of scope for this pass. Left START_MERC as UINT8.
+//     picker) used to page through the roster via a hardcoded 3-state cycle
+//     (START_MERC only ever became 0, 40, or 80), capping what that ONE
+//     screen could display at 120 mercs regardless of MAX_NUMBER_MERCS.
+//     Replaced with real math (numPages = ceil(MAX_NUMBER_MERCS/40), cycles
+//     0..numPages-1) and START_MERC/END_MERC widened UINT8 -> UINT16.
+//     Committed 574a784ae.
 //
-// Still open when resuming:
-//   - Nothing has been written to gamedir/Data-1.13/TableData/MercProfiles.xml
-//     or AIMAvailability.xml yet - the actual "add 6 test mercs (profile IDs
-//     256-261) and confirm they're hireable in AIM" task that motivated this
-//     whole pass has NOT been done. MercProfiles.xml needs 6 new <PROFILE>
-//     blocks (reuse an existing ubFaceIndex/usVoiceIndex like 50 so there's
-//     no missing-art crash); AIMAvailability.xml needs matching <AIM> entries
-//     (uiIndex/description/ProfilId/AimBioID) so the new profiles actually
-//     surface as hireable, not just exist as data.
-//   - None of this session's C++ changes are committed yet (11 modified
-//     files, branch Revamped-V1 - check `git status`/`git diff` before
-//     assuming anything below this point is safe to build on further).
-//   - Full regression test (new game, open AIM, confirm the 6 new mercs
-//     appear and are hireable, hire one, confirm the right merc/stats show
-//     up - not an aliased low-numbered one) has NOT been run yet.
+// This pass's original task - DONE:
+//   - Six test mercs (profile indices 255-260, not 256-261 as first
+//     estimated - MercProfiles.xml already held 255 profiles at indices
+//     0-254) added to gamedir/Data-1.13/TableData/MercProfiles.xml with
+//     matching AIMAvailability.xml <AIM> entries, reusing profile #50's
+//     (Bubba's) face/voice/portrait art and background text so nothing
+//     points at missing assets. Regression-tested in a real running game:
+//     new game -> AIM -> all 6 (TestA-TestF) appeared correctly, not
+//     aliased to a low-numbered profile - user-confirmed via screenshot.
+//   - Committed: a22432e12 (Phase 8 widening + test mercs), 574a784ae (AIM
+//     Facial Index pagination), 00aaa8b7b (Rebel Command, PHASE 9 below).
+//     Working tree is clean of this pass's changes as of all three landing.
+//
+// PHASE 9 (Rebel Command mercProfileId widening) - DONE, committed 00aaa8b7b.
+// Strategic/Rebel Command.cpp's SerialiseMissionFirstEvent/SecondEvent packed
+// mercProfileId into 8 bits of the strategic event's UINT32 param (the old
+// 255-profile cap) alongside missionId (also 8 bits), extraBits, a
+// generic-agent flag, and an event-type discriminator - every bit already
+// spoken for, zero slack anywhere in either 32-bit layout. Fix: repartitioned
+// the shared 16-bit missionId+mercProfileId zone as 11 bits (mercProfileId,
+// full 0-2047 range) + 5 bits (missionId, up to 32 mission types - only 12
+// implemented + 5 planned exist today, room to nearly double). Every other
+// field's bit position/width is untouched; verified by computing the mask
+// union for both event layouts - exactly 0xFFFFFFFF, zero overlap, each.
+// Save compatibility: this UINT32 persists into save files via
+// AddStrategicEvent, so a new save-version gate (REBELCOMMAND_PROFILEID_WIDENING,
+// GameVersion.h) drops any pending EVENT_REBELCOMMAND event found in an
+// older save rather than misreading its old-layout bits - these missions
+// are hours-to-days transient state, not permanent, so that's a safe trade.
+// Not yet regression-tested live (user hasn't reached Rebel Command in a
+// playthrough yet) - compiled clean and the bit-math is verified by
+// computation, but that's code-review-level verification, not a live-game
+// confirmation like the AIM test-merc work got.
 
 #endif

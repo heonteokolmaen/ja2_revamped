@@ -502,10 +502,10 @@ UINT32		guiVideoContractCharge;
 UINT32		guiVideoTitleBar;
 INT32			iAimMembersBoxId = -1;
 
-UINT8			gbCurrentSoldier = 0;
+UINT16			gbCurrentSoldier = 0;	// Phase 6 follow-up: was UINT8 - holds a real ProfileID, was truncating any AIM merc above #255
 UINT8			gbCurrentSoldierBio = 0;
 
-UINT8			gbCurrentIndex = 0;
+UINT16			gbCurrentIndex = 0;	// Phase 6 follow-up: was UINT8 - cursor into AimMercArray, capped roster browsing at 255
 
 UINT8			gubVideoConferencingMode;
 UINT8			gubVideoConferencingPreviousMode;
@@ -2359,7 +2359,7 @@ INT8 AimMemberHireMerc()
 {
 	MERC_HIRE_STRUCT HireMercStruct;
 //	UINT8		ubCurrentSoldier = AimMercArray[gbCurrentIndex];
-	UINT8		ubCurrentSoldier =  gAimAvailability[AimMercArray[gbCurrentIndex]].ProfilId;
+	UINT16		ubCurrentSoldier =  gAimAvailability[AimMercArray[gbCurrentIndex]].ProfilId;	// Phase 6 follow-up: was UINT8
 	INT8			bReturnCode;
 	SoldierID	sSoldierID = NOBODY;
 	INT8			bTypeOfContract=0;
@@ -4894,7 +4894,7 @@ BOOLEAN QuickHireMerc()
 	INT8	bReturnCode;
 	MERC_HIRE_STRUCT HireMercStruct;
 //	UINT8		ubCurrentSoldier = AimMercArray[gbCurrentIndex];
-	UINT8	ubCurrentSoldier = 	gAimAvailability[AimMercArray[gbCurrentIndex]].ProfilId;
+	UINT16	ubCurrentSoldier = 	gAimAvailability[AimMercArray[gbCurrentIndex]].ProfilId;	// Phase 6 follow-up: was UINT8
 
 	giContractAmount = 0;
 

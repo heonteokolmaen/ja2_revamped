@@ -31,7 +31,7 @@
 
 #include "connect.h"
 
-UINT8	NUMBER_OF_MERCS = 0;
+UINT16	NUMBER_OF_MERCS = 0;	// Phase 6 follow-up: was UINT8
 UINT8	LAST_MERC_ID = -1;
 UINT8 NUMBER_OF_BAD_MERCS = -1;
 
@@ -169,8 +169,8 @@ UINT32		guiMercBackGround;
 UINT32		guiMercVideoFaceBackground;
 UINT32		guiMercVideoPopupBackground;
 
-UINT8			gubMercArray[ NUM_PROFILES ]; //MAX_NUMBER_OF_MERCS
-UINT8			gubCurMercIndex;
+UINT16			gubMercArray[ NUM_PROFILES ]; //MAX_NUMBER_OF_MERCS - Phase 6 follow-up: was UINT8
+UINT16			gubCurMercIndex;	// Phase 6 follow-up: was UINT8
 
 INT32			iMercPopUpBox = -1;
 
@@ -303,8 +303,8 @@ void			HandleTalkingSpeck();
 BOOLEAN		DistortVideoMercImage( UINT16 usPosX, UINT16 usPosY, UINT16 usWidth, UINT16 usHeight );
 BOOLEAN		IsAnyMercMercsHired( );
 BOOLEAN		IsAnyMercMercsDead();
-UINT8			CountNumberOfMercMercsHired();
-UINT8			CountNumberOfMercMercsWhoAreDead();
+UINT16			CountNumberOfMercMercsHired();
+UINT16			CountNumberOfMercMercsWhoAreDead();
 BOOLEAN		GetSpeckConditionalOpening( BOOLEAN fJustEnteredScreen );
 void			RemoveSpeckPopupTextBox();
 BOOLEAN		ShouldSpeckStartTalkingDueToActionOnSubPage();
@@ -317,11 +317,11 @@ void			IncreaseMercRandomQuoteValue( UINT8 ubQuoteID, UINT8 ubValue );
 BOOLEAN		ShouldTheMercSiteServerGoDown();
 void			DrawMercVideoBackGround();
 BOOLEAN		CanMercQuoteBeSaid( UINT32 uiQuoteID );
-UINT8			NumberOfMercMercsDead();
+UINT16			NumberOfMercMercsDead();
 //void			MakeBiffAwayForCoupleOfDays(); // anv: moved to mercs.h
 BOOLEAN		AreAnyOfTheNewMercsAvailable();
 void			ShouldAnyNewMercMercBecomeAvailable();
-BOOLEAN		CanMercBeAvailableYet( UINT8 ubMercToCheck );
+BOOLEAN		CanMercBeAvailableYet( UINT16 ubMercToCheck );
 UINT32		CalcMercDaysServed();
 void		RevaluateMercArray();	// silversurfer: for better savegame compatibility
 #ifdef JA2UB
@@ -457,7 +457,7 @@ void RevaluateMercArray()
 	}
 }
 
-BOOLEAN CanMercBeAvailableDuringInit( UINT8 ubMercToCheck )// anv: for all mercs available
+BOOLEAN CanMercBeAvailableDuringInit( UINT16 ubMercToCheck )// anv: for all mercs available
 {
 	if( gConditionsForMercAvailability[ubMercToCheck].Drunk == TRUE )
 		return ( FALSE );
@@ -986,7 +986,7 @@ void DailyUpdateOfMercSite( UINT16 usDate)
 	SOLDIERTYPE *pSoldier;
 	SoldierID	sSoldierID;
 	INT16		i;
-	UINT8		ubMercID;
+	UINT16		ubMercID;	// Phase 6 follow-up: was UINT8
 	INT32		iNumDays;
 
 	//if its the first day, leave
@@ -998,7 +998,7 @@ void DailyUpdateOfMercSite( UINT16 usDate)
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; ++i )
 	{
-		ubMercID = GetMercIDFromMERCArray( (UINT8) i );
+		ubMercID = GetMercIDFromMERCArray( i );
 		if( IsMercOnTeam( ubMercID, FALSE, FALSE ) )
 		{
 			// WANNE: If we have drunken merc, then skip otherwise is will exist 2 times!
@@ -1246,13 +1246,13 @@ void DailyUpdateOfMercSite( UINT16 usDate)
 
 
 // anv: Gets the actually available merc. For use in displaying unlocked mercs on MERC website.
-UINT8 GetAvailableMercIndex(UINT8 gubCurMercIndex)
+UINT16 GetAvailableMercIndex(UINT16 gubCurMercIndex)
 {
-	UINT8 returnID = 0;
+	UINT16 returnID = 0;	// Phase 6 follow-up: was UINT8
 	if( gubCurMercIndex <= NUM_PROFILES )
 	{
-		UINT8 availableID = 0;
-		UINT8 ID = 0;
+		UINT16 availableID = 0;	// Phase 6 follow-up: was UINT8
+		UINT16 ID = 0;				// Phase 6 follow-up: was UINT8
 		//go through mercs, but only consider those unlocked
 		while( availableID < gubCurMercIndex )
 		{
@@ -1265,7 +1265,10 @@ UINT8 GetAvailableMercIndex(UINT8 gubCurMercIndex)
 	}
 
 	// Is this a drunken merc (e.g Larry) and has an additional drunken profile
-	if( gConditionsForMercAvailability[ returnID ].Drunk == TRUE && gConditionsForMercAvailability[ returnID ].uiAlternateIndex != 255)
+	// Phase 6 follow-up: sentinel was 255 (UINT8 "unset" marker) - now that these
+	// fields are UINT16, the "unset" wraparound value of an assigned -1 is 65535,
+	// not 255 (255 is now a legitimate profile ID, e.g. any custom merc at index 255).
+	if( gConditionsForMercAvailability[ returnID ].Drunk == TRUE && gConditionsForMercAvailability[ returnID ].uiAlternateIndex != 0xFFFF)
 	{
 		if ( HasLarryRelapsed() )
 		{
@@ -1282,23 +1285,24 @@ UINT8 GetAvailableMercIndex(UINT8 gubCurMercIndex)
 		}
 		else
 		{
-			// Normal Larry (Normal Profile is one 
+			// Normal Larry (Normal Profile is one
 			returnID = gConditionsForMercAvailability[ returnID ].uiAlternateIndex;
 		}
 	}
 	return returnID;
 }
 
-UINT8 GetAvailableMercIDFromMERCArray(UINT8 ubMercID)
+UINT16 GetAvailableMercIDFromMERCArray(UINT16 ubMercID)
 {
 	return gubMercArray[GetAvailableMercIndex(ubMercID)];
 }
 
 //Gets the actual merc id from the array
-UINT8 GetMercIDFromMERCArray(UINT8 ubMercID)
+UINT16 GetMercIDFromMERCArray(UINT16 ubMercID)
 {
 	// Is this a drunken merc (e.g Larry) and has an additional drunken profile
-	if( gConditionsForMercAvailability[ ubMercID ].Drunk == TRUE && gConditionsForMercAvailability[ ubMercID ].uiAlternateIndex != 255)
+	// Phase 6 follow-up: sentinel was 255, now 0xFFFF (65535) - see note above
+	if( gConditionsForMercAvailability[ ubMercID ].Drunk == TRUE && gConditionsForMercAvailability[ ubMercID ].uiAlternateIndex != 0xFFFF)
 	{
 		if ( HasLarryRelapsed() )
 		{
@@ -1948,7 +1952,7 @@ void CheatToGetAll5Merc()
 BOOLEAN	GetSpeckConditionalOpening( BOOLEAN fJustEnteredScreen )
 {
 	static UINT16	usQuoteToSay=MERC_VIDEO_SPECK_SPEECH_NOT_TALKING;
-	UINT8	ubCnt;
+	UINT16	ubCnt;	// Phase 6 follow-up: was UINT8 - indexes GetMercIDFromMERCArray
 	BOOLEAN	fCanSayLackOfPaymentQuote = TRUE;
 	BOOLEAN fCanUseIdleTag = FALSE;
 
@@ -2194,7 +2198,7 @@ BOOLEAN	GetSpeckConditionalOpening( BOOLEAN fJustEnteredScreen )
 	//if any mercs are dead
 	if( IsAnyMercMercsDead() )
 	{
-		UINT8 ubMercID;
+		UINT16 ubMercID;	// Phase 6 follow-up: was UINT8
 		//if no merc has died before
 #ifdef JA2UB
 //JA25: not using quote quote
@@ -2208,7 +2212,7 @@ BOOLEAN	GetSpeckConditionalOpening( BOOLEAN fJustEnteredScreen )
 		//loop through all the mercs and see if any are dead and the quote is not said
 		for( ubCnt=0; ubCnt<NUMBER_OF_MERCS; ubCnt++ )
 		{
-			ubMercID = GetMercIDFromMERCArray( (UINT8) ubCnt );
+			ubMercID = GetMercIDFromMERCArray( ubCnt );
 			//if the merc is dead
 			if( IsMercDead( ubMercID ) )
 			{
@@ -2316,8 +2320,8 @@ BOOLEAN	GetSpeckConditionalOpening( BOOLEAN fJustEnteredScreen )
 
 BOOLEAN IsAnyMercMercsHired( )
 {
-	UINT8	ubMercID;
-	UINT8	i;
+	UINT16	ubMercID;	// Phase 6 follow-up: was UINT8
+	UINT16	i;			// Phase 6 follow-up: was UINT8
 
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; ++i)
@@ -2334,13 +2338,13 @@ BOOLEAN IsAnyMercMercsHired( )
 
 BOOLEAN IsAnyMercMercsDead()
 {
-	UINT8	i;
-	UINT8 ubMercID;
+	UINT16	i;			// Phase 6 follow-up: was UINT8
+	UINT16 ubMercID;	// Phase 6 follow-up: was UINT8
 
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; i++)
 	{
-		ubMercID = GetMercIDFromMERCArray( (UINT8) i );
+		ubMercID = GetMercIDFromMERCArray( i );
 		if( gMercProfiles[ ubMercID ].bMercStatus == MERC_IS_DEAD )
 			return( TRUE );
 	}
@@ -2349,16 +2353,16 @@ BOOLEAN IsAnyMercMercsDead()
 }
 
 
-UINT8 NumberOfMercMercsDead()
+UINT16 NumberOfMercMercsDead()
 {
-	UINT8	i;
-	UINT8	ubNumDead = 0;
-	UINT8	ubMercID;
+	UINT16	i;			// Phase 6 follow-up: was UINT8
+	UINT16	ubNumDead = 0;	// Phase 6 follow-up: was UINT8
+	UINT16	ubMercID;	// Phase 6 follow-up: was UINT8
 
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; i++)
 	{
-		ubMercID = GetMercIDFromMERCArray( (UINT8) i );
+		ubMercID = GetMercIDFromMERCArray( i );
 		if( gMercProfiles[ ubMercID ].bMercStatus == MERC_IS_DEAD )
 			ubNumDead++;
 	}
@@ -2368,11 +2372,11 @@ UINT8 NumberOfMercMercsDead()
 
 
 
-UINT8	CountNumberOfMercMercsHired()
+UINT16	CountNumberOfMercMercsHired()
 {
-	UINT8	ubMercID;
-	UINT8	i;
-	UINT8	ubCount=0;
+	UINT16	ubMercID;	// Phase 6 follow-up: was UINT8
+	UINT16	i;			// Phase 6 follow-up: was UINT8
+	UINT16	ubCount=0;	// Phase 6 follow-up: was UINT8
 
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; ++i)
@@ -2388,16 +2392,16 @@ UINT8	CountNumberOfMercMercsHired()
 }
 
 
-UINT8	CountNumberOfMercMercsWhoAreDead()
+UINT16	CountNumberOfMercMercsWhoAreDead()
 {
-	UINT8	i;
-	UINT8	ubCount=0;
-	UINT8	ubMercID;
+	UINT16	i;			// Phase 6 follow-up: was UINT8
+	UINT16	ubCount=0;	// Phase 6 follow-up: was UINT8
+	UINT16	ubMercID;	// Phase 6 follow-up: was UINT8
 
 	//loop through all of the hired mercs from M.E.R.C.
 	for(i=0; i<NUMBER_OF_MERCS; i++)
 	{
-		ubMercID = GetMercIDFromMERCArray( (UINT8) i );
+		ubMercID = GetMercIDFromMERCArray( i );
 
 		if( gMercProfiles[ ubMercID ].bMercStatus == MERC_IS_DEAD )
 		{
@@ -2443,7 +2447,7 @@ void RemoveSpeckPopupTextBox()
 
 
 
-void HandlePlayerHiringMerc( UINT8 ubHiredMercID )
+void HandlePlayerHiringMerc( UINT16 ubHiredMercID )
 {
 	gusMercVideoSpeckSpeech = MERC_VIDEO_SPECK_SPEECH_NOT_TALKING;
 
@@ -2544,7 +2548,7 @@ void HandlePlayerHiringMerc( UINT8 ubHiredMercID )
 }
 
 
-BOOLEAN IsMercMercAvailable( UINT8 ubMercID )
+BOOLEAN IsMercMercAvailable( UINT16 ubMercID )
 {
 	UINT16	cnt;
 
@@ -3059,7 +3063,7 @@ void MakeBiffAwayForCoupleOfDays()
 
 BOOLEAN AreAnyOfTheNewMercsAvailable()
 {
-	UINT8	ubMercID;
+	UINT16	ubMercID;	// Phase 6 follow-up: was UINT8
 	
 	if( LaptopSaveInfo.fNewMercsAvailableAtMercSite )
 		return( FALSE );
@@ -3100,7 +3104,7 @@ void ShouldAnyNewMercMercBecomeAvailable()
 	}
 }
 
-BOOLEAN CanMercBeAvailableYet( UINT8 ubMercToCheck )
+BOOLEAN CanMercBeAvailableYet( UINT16 ubMercToCheck )
 {
 	// WANNE: If we have a drunken profile, skip
 	if (gConditionsForMercAvailability[ ubMercToCheck ].Drunk)
@@ -3187,7 +3191,8 @@ void NewMercsAvailableAtMercSiteCallBack()
 				else
 				{
 					// If Previous merc has alternate index
-					if (i > 0 && gConditionsForMercAvailability[gConditionsForMercAvailability[i - 1].uiIndex].uiAlternateIndex != 255)
+					// Phase 6 follow-up: sentinel was 255, now 0xFFFF (see GetMercIDFromMERCArray note)
+					if (i > 0 && gConditionsForMercAvailability[gConditionsForMercAvailability[i - 1].uiIndex].uiAlternateIndex != 0xFFFF)
 					{
 						// Previous merc has alternate (drunk) merc, skip his one!						
 						//LaptopSaveInfo.gubLastMercIndex = LaptopSaveInfo.gubLastMercIndex + 2;

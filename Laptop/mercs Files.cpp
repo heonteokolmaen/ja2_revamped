@@ -1921,7 +1921,8 @@ void PrevMercMember()
 	}
 	// WANNE: If current profile has an alternate profile, skip the previous one, because it is the alternate profile,
 	// otherwise we have both profiles available in MERC!
-	if (gConditionsForMercAvailability[ GetAvailableMercIndex(gubCurMercIndex) ].uiAlternateIndex != 255)
+	// Phase 6 follow-up: sentinel was 255, now 0xFFFF (see GetMercIDFromMERCArray note in mercs.cpp)
+	if (gConditionsForMercAvailability[ GetAvailableMercIndex(gubCurMercIndex) ].uiAlternateIndex != 0xFFFF)
 	{
 		gubCurMercIndex--;
 	}

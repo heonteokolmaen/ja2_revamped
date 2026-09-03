@@ -6,7 +6,7 @@
 #define		MERC_BUTTON_UP_COLOR													FONT_MCOLOR_WHITE
 #define		MERC_BUTTON_DOWN_COLOR												FONT_MCOLOR_DKWHITE
 
-extern UINT8	NUMBER_OF_MERCS;
+extern UINT16	NUMBER_OF_MERCS;	// Phase 6 follow-up: was UINT8 - count of currently-available mercs, could exceed 255 with a large custom roster
 extern UINT8	LAST_MERC_ID;
 
 #define		MAX_NUMBER_OF_MERCS		28
@@ -50,14 +50,14 @@ typedef struct
 {
 	UINT16	usMoneyPaid;
 	UINT16	usDay;
-	UINT8   ubMercArrayID;
-	UINT8   uiIndex;
-	UINT8   ProfilId;
+	UINT16  ubMercArrayID;	// Phase 6 follow-up: was UINT8 (max 255) - profile-ID-shaped, widened for NUM_PROFILES(2048)
+	UINT16  uiIndex;		// Phase 6 follow-up: was UINT8 - index into gConditionsForMercAvailability/gubMercArray (NUM_PROFILES-sized)
+	UINT16  ProfilId;		// Phase 6 follow-up: was UINT8 - holds a real ProfileID value
 	BOOLEAN NewMercsAvailable;
 	BOOLEAN StartMercsAvailable;
 	UINT8   MercBio;
 	BOOLEAN Drunk;
-	UINT8   uiAlternateIndex;
+	UINT16  uiAlternateIndex;	// Phase 6 follow-up: was UINT8 - same sentinel (255->65535) caveat as uiIndex
 
 }	CONTITION_FOR_MERC_AVAILABLE;
 
@@ -65,15 +65,15 @@ typedef struct
 {
 	UINT16	usMoneyPaid;
 	UINT16	usDay;
-	UINT8   ubMercArrayID;
-	UINT8   uiIndex;
-	UINT8   ProfilId;
+	UINT16  ubMercArrayID;
+	UINT16  uiIndex;
+	UINT16  ProfilId;
 	BOOLEAN NewMercsAvailable;
 	BOOLEAN StartMercsAvailable;
 	UINT8   MercBio;
 	BOOLEAN	Drunk;
-	UINT8   uiAlternateIndex;
-	
+	UINT16  uiAlternateIndex;
+
 }	CONTITION_FOR_MERC_AVAILABLE_TEMP;
 
 extern CONTITION_FOR_MERC_AVAILABLE gConditionsForMercAvailability[ NUM_PROFILES ]; //NUM_MERC_ARRIVALS ];
@@ -109,7 +109,7 @@ enum
 };
 
 
-BOOLEAN CanMercBeAvailableDuringInit( UINT8 ubMercToCheck );// anv: for all mercs available
+BOOLEAN CanMercBeAvailableDuringInit( UINT16 ubMercToCheck );// anv: for all mercs available
 void GameInitMercs();
 BOOLEAN EnterMercs();
 void ExitMercs();
@@ -121,16 +121,16 @@ BOOLEAN InitMercBackGround();
 BOOLEAN DrawMecBackGround();
 BOOLEAN RemoveMercBackGround();
 void DailyUpdateOfMercSite( UINT16 usDate);
-UINT8 GetMercIDFromMERCArray(UINT8 ubMercID);
+UINT16 GetMercIDFromMERCArray(UINT16 ubMercID);
 
-UINT8 GetAvailableMercIndex(UINT8 gubCurMercIndex);
-UINT8 GetAvailableMercIDFromMERCArray(UINT8 ubMercID);
+UINT16 GetAvailableMercIndex(UINT16 gubCurMercIndex);
+UINT16 GetAvailableMercIDFromMERCArray(UINT16 ubMercID);
 
 void DisplayTextForSpeckVideoPopUp(STR16 pString);
 
-BOOLEAN IsMercMercAvailable( UINT8 ubMercID );
+BOOLEAN IsMercMercAvailable( UINT16 ubMercID );
 
-void HandlePlayerHiringMerc( UINT8 ubHiredMercID );
+void HandlePlayerHiringMerc( UINT16 ubHiredMercID );
 void EnterInitMercSite();
 #ifdef JA2UB
 //void GetMercSiteBackOnline();
@@ -143,8 +143,8 @@ extern	UINT16			gusMercVideoSpeckSpeech;
 
 extern	UINT8			gubArrivedFromMercSubSite;
 
-extern	UINT8			gubMercArray[ NUM_PROFILES ]; //MAX_NUMBER_OF_MERCS
-extern	UINT8			gubCurMercIndex;
+extern	UINT16			gubMercArray[ NUM_PROFILES ]; //MAX_NUMBER_OF_MERCS - Phase 6 follow-up: was UINT8
+extern	UINT16			gubCurMercIndex;	// Phase 6 follow-up: was UINT8
 //extern	UINT8			gubLastMercIndex;
 
 //extern	UINT32		guiNumberOfMercPaymentsInDays;

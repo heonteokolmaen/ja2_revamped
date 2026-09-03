@@ -137,7 +137,7 @@ UINT8 guiEncyclopedia_TextPage;								///< Current text page.
 
 //////////////
 // external data to save includes
-extern UINT8 gubMercArray[ NUM_PROFILES ];
+extern UINT16 gubMercArray[ NUM_PROFILES ];	// Phase 6 follow-up: was UINT8 - must match Laptop/mercs.h's real declaration
 extern UINT8 gubQuest[MAX_QUESTS];
 //extern 	STR16 QuestDescText[];
 //////////////
@@ -329,7 +329,7 @@ INT16 GetNextPreviousLocation( INT16 curLoc, BOOLEAN next, ENC_DATA_FILTER_LOCAT
 */
 INT16 GetNextPreviousCharacter( INT16 curChar, BOOLEAN next, ENC_DATA_FILTER_CHARACTER filterClass, UINT16 filterSubClass )
 {
-	extern UINT8 gubMercArray[ NUM_PROFILES ];
+	extern UINT16 gubMercArray[ NUM_PROFILES ];	// Phase 6 follow-up: was UINT8
 	BOOLEAN notFound = TRUE;
 
 	//reset to -1 if out of bounds

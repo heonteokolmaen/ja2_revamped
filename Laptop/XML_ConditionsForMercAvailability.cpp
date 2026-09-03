@@ -146,7 +146,7 @@ mercAvailabilityEndElementHandle(void *userData, const XML_Char *name)
 		else if(strcmp(name, "uiIndex") == 0)
 		{
 			pData->curElement = ELEMENT;
-			pData->curMercAvailability.uiIndex	= (UINT8) atol(pData->szCharData);
+			pData->curMercAvailability.uiIndex	= (UINT16) atol(pData->szCharData);	// Phase 6 follow-up: was UINT8
 		}
 		else if(strcmp(name, "usMoneyPaid") == 0)
 		{
@@ -161,7 +161,7 @@ mercAvailabilityEndElementHandle(void *userData, const XML_Char *name)
 		else if(strcmp(name, "ProfilId") == 0)
 		{
 			pData->curElement = ELEMENT;
-			pData->curMercAvailability.ProfilId	= (UINT8) atol(pData->szCharData);
+			pData->curMercAvailability.ProfilId	= (UINT16) atol(pData->szCharData);	// Phase 6 follow-up: was UINT8
 		}
 		else if(strcmp(name, "NewMercsAvailable") == 0)
 		{
@@ -186,7 +186,7 @@ mercAvailabilityEndElementHandle(void *userData, const XML_Char *name)
 		else if(strcmp(name, "uiAlternateIndex") == 0)
 		{
 			pData->curElement = ELEMENT;
-			pData->curMercAvailability.uiAlternateIndex	= (UINT8) atol(pData->szCharData);
+			pData->curMercAvailability.uiAlternateIndex	= (UINT16) atol(pData->szCharData);	// Phase 6 follow-up: was UINT8
 		}
 		
 		pData->maxReadDepth--;

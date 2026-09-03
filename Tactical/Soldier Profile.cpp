@@ -997,7 +997,9 @@ for( int i = 0; i < NUM_PROFILES; i++ )
 	// Find all AIM merc and add them in the AimMercArray which is used for the AIM webpage
 	for (i = 0; i < maxAIMProfiles; i++)
 	{
-		if (gAimAvailability[i].ProfilId != 255)
+		// Phase 6 follow-up: AimAvailability.xml writes "-1" for empty slots, which now
+		// parses to 0xFFFF (65535) with ProfilId widened to UINT16, not 255.
+		if (gAimAvailability[i].ProfilId != 0xFFFF)
 		{
 			AimMercArray[ x ] = gAimAvailability[i].ProfilId;
 			x++;

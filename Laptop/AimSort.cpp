@@ -964,7 +964,10 @@ void DrawSelectLight(UINT8 ubMode, UINT8 ubImage)
 
 BOOLEAN SortMercArray(void)
 {
-	qsort( (LPVOID)AimMercArray, (size_t) MAX_NUMBER_MERCS, sizeof(UINT8), QsortCompare);
+	// Phase 6 follow-up: AimMercArray is now UINT16 - sizeof(UINT8) here would make
+	// qsort treat the array as twice as many, half-width elements, shuffling bytes
+	// instead of whole entries (silent memory corruption).
+	qsort( (LPVOID)AimMercArray, (size_t) MAX_NUMBER_MERCS, sizeof(UINT16), QsortCompare);
 
 	return(TRUE);
 }
@@ -974,8 +977,9 @@ BOOLEAN SortMercArray(void)
 
 INT32 QsortCompare( const void *pNum1, const void *pNum2)
 {
-	UINT8 Num1 = *(UINT8*)pNum1;
-	UINT8 Num2 = *(UINT8*)pNum2;
+	// Phase 6 follow-up: was UINT8 - must match AimMercArray's real UINT16 element size
+	UINT16 Num1 = *(UINT16*)pNum1;
+	UINT16 Num2 = *(UINT16*)pNum2;
 
 	switch( gubCurrentSortMode )
 	{

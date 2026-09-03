@@ -17,9 +17,9 @@
 #include "LocalizedStrings.h"
 #include <soldier profile type.h>
 
-UINT8 MAX_NUMBER_MERCS = 0;
+UINT16 MAX_NUMBER_MERCS = 0;	// Phase 6 follow-up: was UINT8
 
-UINT8			AimMercArray[ NUM_PROFILES ]; //MAX_NUMBER_MERCS ];
+UINT16			AimMercArray[ NUM_PROFILES ]; //MAX_NUMBER_MERCS ]; - Phase 6 follow-up: was UINT8
 
 AIM_AVAILABLE_TEMP gAimAvailabilityTemp[ NUM_PROFILES ];
 AIM_AVAILABLE gAimAvailability[ NUM_PROFILES ];

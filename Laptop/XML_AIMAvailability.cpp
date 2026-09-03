@@ -114,12 +114,12 @@ aimAvailabilityEndElementHandle(void *userData, const XML_Char *name)
 		else if(strcmp(name, "uiIndex") == 0)
 		{
 			pData->curElement = ELEMENT;
-			pData->curAimAvailability.uiIndex	= (UINT8) atol(pData->szCharData);
+			pData->curAimAvailability.uiIndex	= (UINT16) atol(pData->szCharData);	// Phase 6 follow-up: was UINT8
 		}
 		else if(strcmp(name, "ProfilId") == 0)
 		{
 			pData->curElement = ELEMENT;
-			pData->curAimAvailability.ProfilId	= (UINT8) atol(pData->szCharData);
+			pData->curAimAvailability.ProfilId	= (UINT16) atol(pData->szCharData);	// Phase 6 follow-up: was UINT8
 		}	
 		else if(strcmp(name, "AimBioID") == 0)
 		{

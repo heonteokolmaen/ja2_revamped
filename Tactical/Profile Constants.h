@@ -82,11 +82,15 @@
 //      UINT32 wire format (Serialise/DeserialiseMission{First,Second}Event).
 //      Widening this one isn't mechanical - it means reshuffling the bit
 //      layout (mission/duration/extraBits share the other 24 bits).
+//
+// DONE (item 5, this session - NOT yet committed, see PHASE 8 below):
 //   5. Laptop/mercs.cpp:396 - the whole MERC-hiring-availability subsystem
 //      (gubMercArray, AimMercArray, gConditionsForMercAvailability::uiIndex)
-//      stores profile-ID-shaped values in its own UINT8 arrays/fields,
-//      independent of ProfileID entirely. Deeper than the others - touching
-//      it for real cascades like a mini Phase 2 scoped to this one file.
+//      stored profile-ID-shaped values in its own UINT8 arrays/fields,
+//      independent of ProfileID entirely. Widened UINT8 -> UINT16 (plain,
+//      not the ProfileID strong-typedef - too many arithmetic/loop sites in
+//      these files to make deleted-narrow-constructors practical). See
+//      PHASE 8 for full details and the still-open pieces.
 //
 // PHASE 7 (regression pass) - DONE. Tested against a real pre-Phase-6 v1.13
 // save (three SavedGames from an actual playthrough) plus a fresh new game,
@@ -133,5 +137,78 @@
 //     merc info panel - can't advance time or reach a sector. Doesn't affect
 //     the normal IMP-creation flow (confirmed working above); not something
 //     this session's profile-widening work touched or introduced.
+//
+// PHASE 8 (AIM/MERC hiring-availability widening, item 5 above) - CODE DONE,
+// NOT YET COMMITTED, XML content NOT YET ADDED. Real build verified (full
+// JA2.exe links clean) but not yet regression-tested in a running game.
+//
+// What changed (all plain UINT8 -> UINT16, not ProfileID):
+//   - Laptop/mercs.h+.cpp: CONTITION_FOR_MERC_AVAILABLE(_TEMP) fields
+//     (ubMercArrayID/uiIndex/ProfilId/uiAlternateIndex), gubMercArray[],
+//     gubCurMercIndex, NUMBER_OF_MERCS, and every function signature that
+//     carries a profile ID across the M.E.R.C.-site hiring path
+//     (GetMercIDFromMERCArray, GetAvailableMercIndex,
+//     GetAvailableMercIDFromMERCArray, CanMercBeAvailableDuringInit,
+//     CanMercBeAvailableYet, HandlePlayerHiringMerc, IsMercMercAvailable,
+//     plus the Count/IsAny* helper functions and their internal loop
+//     locals - all were UINT8, silently capping the M.E.R.C. site at 255).
+//   - Laptop/aim.h+.cpp: AIM_AVAILABLE(_TEMP) fields, AimMercArray[],
+//     MAX_NUMBER_MERCS (same M.E.R.C.-site pattern, for the AIM site).
+//   - Laptop/AimMembers.cpp: gbCurrentSoldier + gbCurrentIndex (the AIM
+//     screen's "which merc am I looking at" state) were UINT8 - would have
+//     silently aliased any AIM merc above #255 to a low-numbered one. Two
+//     local ubCurrentSoldier declarations in the actual hire-button handlers
+//     had the same bug.
+//   - Laptop/AimSort.cpp: qsort() was called with sizeof(UINT8) against what
+//     is now a UINT16 array - would have corrupted the array (half-width
+//     stride) the first time a player sorted the AIM list. QsortCompare's
+//     own UINT8* reads fixed to match.
+//   - Laptop/AimFacialIndex.cpp, Laptop/Encyclopedia_Data_new.cpp,
+//     Laptop/mercs Files.cpp: stale `extern UINT8 gbCurrentIndex` / `extern
+//     UINT8 gubMercArray[]` re-declarations that no longer matched the real
+//     (now UINT16) definitions - a cross-translation-unit type mismatch that
+//     compiles "successfully" but is real, silent corruption risk.
+//   - Laptop/XML_ConditionsForMercAvailability.cpp,
+//     Laptop/XML_AIMAvailability.cpp: parser casts were `(UINT8) atol(...)`,
+//     truncating any profile ID above 255 read from MercAvailability.xml /
+//     AIMAvailability.xml before it even reached the widened struct fields.
+//   - Sentinel fix, three call sites (mercs.cpp x2, mercs Files.cpp x1):
+//     `uiAlternateIndex != 255` had to become `!= 0xFFFF`, because assigning
+//     -1 to a UINT16 field wraps to 65535, not 255.
+//   - Tactical/Soldier Profile.cpp: `gAimAvailability[i].ProfilId != 255`
+//     (the "is this AIM slot populated" check in the code that rebuilds
+//     AimMercArray at load) had the same problem, confirmed by checking the
+//     real AIMAvailability.xml on disk - its ~250 built-in empty/reserved
+//     slots are written as literal `<ProfilId>-1</ProfilId>` text, which now
+//     parses to 0xFFFF, not 255. Fixed to `!= 0xFFFF`.
+//
+// Found but deliberately NOT fixed (separate, larger, doesn't block the
+// current use case):
+//   - Laptop/AimFacialIndex.cpp's mugshot-grid browser (the visual AIM member
+//     picker) pages through the roster via a hardcoded 3-state cycle
+//     (START_MERC only ever becomes 0, 40, or 80 - see the click handlers
+//     around lines 131-148/525-572), capping what that ONE screen can
+//     display at 120 mercs regardless of MAX_NUMBER_MERCS. Not a UINT8-width
+//     bug - START_MERC's actual runtime range (0/40/80) never needed
+//     widening. This is a real, separate UI limitation if the roster ever
+//     grows past ~120 simultaneously-available AIM mercs; needs its own
+//     pagination redesign (a loop/formula instead of the 3-way if/else),
+//     out of scope for this pass. Left START_MERC as UINT8.
+//
+// Still open when resuming:
+//   - Nothing has been written to gamedir/Data-1.13/TableData/MercProfiles.xml
+//     or AIMAvailability.xml yet - the actual "add 6 test mercs (profile IDs
+//     256-261) and confirm they're hireable in AIM" task that motivated this
+//     whole pass has NOT been done. MercProfiles.xml needs 6 new <PROFILE>
+//     blocks (reuse an existing ubFaceIndex/usVoiceIndex like 50 so there's
+//     no missing-art crash); AIMAvailability.xml needs matching <AIM> entries
+//     (uiIndex/description/ProfilId/AimBioID) so the new profiles actually
+//     surface as hireable, not just exist as data.
+//   - None of this session's C++ changes are committed yet (11 modified
+//     files, branch Revamped-V1 - check `git status`/`git diff` before
+//     assuming anything below this point is safe to build on further).
+//   - Full regression test (new game, open AIM, confirm the 6 new mercs
+//     appear and are hireable, hire one, confirm the right merc/stats show
+//     up - not an aliased low-numbered one) has NOT been run yet.
 
 #endif

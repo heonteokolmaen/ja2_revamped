@@ -14,26 +14,26 @@
 
 //#define		MAX_NUMBER_MERCS							40
 
-extern UINT8 MAX_NUMBER_MERCS;
+extern UINT16 MAX_NUMBER_MERCS;	// Phase 6 follow-up: was UINT8 - count of simultaneously-available AIM mercs, could exceed 255 with a large custom roster
 
-extern UINT8			AimMercArray[ NUM_PROFILES ];//MAX_NUMBER_MERCS ];
+extern UINT16			AimMercArray[ NUM_PROFILES ];//MAX_NUMBER_MERCS ]; - Phase 6 follow-up: was UINT8
 
 typedef struct
 {
-	UINT8   ubAimArrayID;
-	UINT8   uiIndex;
-	UINT8   ProfilId;
+	UINT16  ubAimArrayID;	// Phase 6 follow-up: was UINT8 - profile-ID-shaped, widened for NUM_PROFILES(2048)
+	UINT16  uiIndex;		// Phase 6 follow-up: was UINT8
+	UINT16  ProfilId;		// Phase 6 follow-up: was UINT8
 	UINT8   AimBio;
-	
+
 }	AIM_AVAILABLE;
 
 typedef struct
 {
-	UINT8   ubAimArrayID;
-	UINT8   uiIndex;
-	UINT8   ProfilId;
+	UINT16  ubAimArrayID;
+	UINT16  uiIndex;
+	UINT16  ProfilId;
 	UINT8   AimBio;
-	
+
 }	AIM_AVAILABLE_TEMP;
 
 extern AIM_AVAILABLE_TEMP gAimAvailabilityTemp[ NUM_PROFILES ];

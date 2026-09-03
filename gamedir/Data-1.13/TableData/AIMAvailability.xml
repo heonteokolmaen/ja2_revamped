@@ -1529,4 +1529,40 @@
 		<ProfilId>-1</ProfilId>
 		<AimBioID>-1</AimBioID>
 	</AIM>
+	<AIM>
+		<uiIndex>255</uiIndex>
+		<description>TestA</description>
+		<ProfilId>255</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
+	<AIM>
+		<uiIndex>256</uiIndex>
+		<description>TestB</description>
+		<ProfilId>256</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
+	<AIM>
+		<uiIndex>257</uiIndex>
+		<description>TestC</description>
+		<ProfilId>257</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
+	<AIM>
+		<uiIndex>258</uiIndex>
+		<description>TestD</description>
+		<ProfilId>258</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
+	<AIM>
+		<uiIndex>259</uiIndex>
+		<description>TestE</description>
+		<ProfilId>259</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
+	<AIM>
+		<uiIndex>260</uiIndex>
+		<description>TestF</description>
+		<ProfilId>260</ProfilId>
+		<AimBioID>0</AimBioID>
+	</AIM>
 </AIM_AVAILABLES>

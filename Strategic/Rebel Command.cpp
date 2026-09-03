@@ -427,7 +427,7 @@ struct MissionFirstEvent
 	BOOLEAN isFirstEvent;
 	BOOLEAN sentGenericRebelAgent;
 	BOOLEAN isMissionSuccess;
-	UINT8 mercProfileId;
+	UINT16 mercProfileId;	// Phase 9: was UINT8 - see Serialise/DeserialiseMissionFirstEvent
 	UINT8 missionId;
 	UINT8 missionDurationInHours;
 	UINT8 extraBits;
@@ -437,21 +437,33 @@ struct MissionSecondEvent
 {
 	BOOLEAN isSecondEvent;
 	BOOLEAN sentGenericRebelAgent;
-	UINT8 mercProfileId;
+	UINT16 mercProfileId;	// Phase 9: was UINT8 - see Serialise/DeserialiseMissionSecondEvent
 	UINT8 missionId;
 	UINT16 extraBits;
 };
 
 // serialisation/deserialisation functions for passing information into a strategic event param
-UINT32 SerialiseMissionFirstEvent(BOOLEAN sentGenericRebelAgent, UINT8 mercProfileId, RebelCommandAgentMissions mission, UINT8 missionDuration, UINT8 extraBits)
+//
+// Phase 9: mercProfileId used to get 8 bits here (capping it at 255, the old profile limit)
+// and missionId got 8 bits too, even though RebelCommandAgentMissions only has a couple dozen
+// real+planned values. Repartitioned that shared 16-bit zone as 11 bits for mercProfileId
+// (covers the full 0-2047 NUM_PROFILES range) and 5 bits for missionId (covers up to 32
+// mission types, room to roughly double the current roster). Every other field's bit
+// position/width is unchanged. NOTE: this UINT32 is what AddStrategicEvent() persists into
+// the save file for a pending Rebel Command mission - see the REBELCOMMAND_PROFILEID_WIDENING
+// save-version gate in SaveLoadGame.cpp, which drops any old-format pending mission on load
+// rather than misreading it under the new bit layout.
+UINT32 SerialiseMissionFirstEvent(BOOLEAN sentGenericRebelAgent, UINT16 mercProfileId, RebelCommandAgentMissions mission, UINT8 missionDuration, UINT8 extraBits)
 {
 	UINT32 ret = 0x00000000;
 
 	if (!sentGenericRebelAgent)
 		ret |= 0x01000000;
 
-	ret |= (mercProfileId << 16);
-	ret |= (static_cast<UINT8>(mission) << 8);
+	// mercProfileId: 11 bits, bits 13-23 (was 8 bits at bits 16-23)
+	ret |= ((mercProfileId & 0x7FF) << 13);
+	// missionId: 5 bits, bits 8-12 (was 8 bits at bits 8-15)
+	ret |= ((static_cast<UINT8>(mission) & 0x1F) << 8);
 	ret |= missionDuration;
 
 	// extraBits can only be 6 bits
@@ -467,21 +479,24 @@ void DeserialiseMissionFirstEvent(UINT32 param, MissionFirstEvent& evt)
 	evt.isFirstEvent =           ((param >> 31) & 0x00000001) == 0;
 	evt.sentGenericRebelAgent =  ((param >> 24) & 0x00000001) == 0;
 	evt.isMissionSuccess =        (param        & 0x000000FF) > 0;
-	evt.mercProfileId =          ((param >> 16) & 0x000000FF);
-	evt.missionId =              ((param >> 8)  & 0x000000FF);
+	evt.mercProfileId =          ((param >> 13) & 0x000007FF);	// 11 bits (was 8 bits at >>16)
+	evt.missionId =              ((param >> 8)  & 0x0000001F);	// 5 bits (was 8 bits)
 	evt.missionDurationInHours =  (param        & 0x000000FF);
 	evt.extraBits =              ((param >> 25) & 0x0000003F);
 }
 
-UINT32 SerialiseMissionSecondEvent(BOOLEAN sentGenericRebelAgent, UINT8 mercProfileId, RebelCommandAgentMissions mission, UINT16 extraBits)
+// Phase 9: same repartition as SerialiseMissionFirstEvent above - see its comment.
+UINT32 SerialiseMissionSecondEvent(BOOLEAN sentGenericRebelAgent, UINT16 mercProfileId, RebelCommandAgentMissions mission, UINT16 extraBits)
 {
 	UINT32 ret = 0x80000000;
 
 	if (!sentGenericRebelAgent)
 		ret |= 0x00010000;
 
-	ret |= (mercProfileId << 8);
-	ret |= static_cast<UINT8>(mission);
+	// mercProfileId: 11 bits, bits 5-15 (was 8 bits at bits 8-15)
+	ret |= ((mercProfileId & 0x7FF) << 5);
+	// missionId: 5 bits, bits 0-4 (was 8 bits at bits 0-7)
+	ret |= (static_cast<UINT8>(mission) & 0x1F);
 
 	// extraBits can only be 14 bits
 	extraBits &= 0x3FFF;
@@ -495,8 +510,8 @@ void DeserialiseMissionSecondEvent(UINT32 param, MissionSecondEvent& evt)
 {
 	evt.isSecondEvent =         ((param >> 31) & 0x00000001) == 1;
 	evt.sentGenericRebelAgent = ((param >> 16) & 0x00000001) == 0;
-	evt.mercProfileId =         ((param >> 8)  & 0x000000FF);
-	evt.missionId =              (param        & 0x000000FF);
+	evt.mercProfileId =         ((param >> 5)  & 0x000007FF);	// 11 bits (was 8 bits at >>8)
+	evt.missionId =              (param        & 0x0000001F);	// 5 bits (was 8 bits)
 	evt.extraBits =             ((param >> 17) & 0x0003FFF);
 }
 
@@ -2980,7 +2995,7 @@ void PrepareMission(INT8 index)
 				for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 				{
 					SOLDIERTYPE* pSoldier = i;
-					if (pSoldier->ubProfile == static_cast<int>(evt.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionFirstEvent - widen there first if this needs to see profiles above 255
+					if (pSoldier->ubProfile == static_cast<int>(evt.mercProfileId)) // Phase 9: mercProfileId now 11 bits in Serialise/DeserialiseMissionFirstEvent, sees the full profile range
 					{
 						TakeSoldierOutOfVehicle(pSoldier);
 						RemoveCharacterFromSquads(pSoldier);
@@ -4886,7 +4901,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 		{
 			const SOLDIERTYPE* pSoldier = i;
 
-			if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId) && pSoldier->bActive) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
+			if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId) && pSoldier->bActive) // Phase 9: mercProfileId now 11 bits in Serialise/DeserialiseMissionSecondEvent, sees the full profile range
 			{
 				foundMerc = TRUE;
 				break;
@@ -4956,7 +4971,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 					for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 					{
 						SOLDIERTYPE* pSoldier = i;
-						if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
+						if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // Phase 9: mercProfileId now 11 bits in Serialise/DeserialiseMissionSecondEvent, sees the full profile range
 						{
 							if (mission == RCAM_FORGE_TRANSPORT_ORDERS)
 							{
@@ -4983,7 +4998,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 				for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 				{
 					SOLDIERTYPE* pSoldier = i;
-					if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
+					if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // Phase 9: mercProfileId now 11 bits in Serialise/DeserialiseMissionSecondEvent, sees the full profile range
 					{
 						// mission failed! we tried, give some pity exp
 						StatChange(pSoldier, LDRAMT, 20, FROM_FAILURE);
@@ -5005,7 +5020,7 @@ void HandleStrategicEvent(const UINT32 eventParam)
 			for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
 			{
 				SOLDIERTYPE* pSoldier = i;
-				if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // TODO(Phase 4): mercProfileId is bit-packed to 8 bits in Serialise/DeserialiseMissionSecondEvent - widen there first if this needs to see profiles above 255
+				if (pSoldier->ubProfile == static_cast<int>(evt1.mercProfileId)) // Phase 9: mercProfileId now 11 bits in Serialise/DeserialiseMissionSecondEvent, sees the full profile range
 				{
 					// merc ready for reassignment
 					pSoldier->bSectorZ -= REBEL_COMMAND_Z_OFFSET;

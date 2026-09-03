@@ -5049,6 +5049,17 @@ BOOLEAN LoadSavedGame( int ubSavedGameID )
 		LoadGameFilePosition( FileGetPos( hFile ), "Strategic Events" );
 	#endif
 
+	// Phase 9: SerialiseMissionFirstEvent/SecondEvent's bit layout changed (mercProfileId
+	// grown from 8 bits to 11 bits, at missionId's expense) to support profile IDs above 255.
+	// Any EVENT_REBELCOMMAND event already pending in an older save was packed with the old
+	// layout - reinterpreting those bits under the new layout would scramble the mission's
+	// merc/mission identity. These missions are short-lived (hours to days), not permanent
+	// state, so dropping any in-flight one on this one-time upgrade is the safe trade.
+	if ( guiCurrentSaveGameVersion < REBELCOMMAND_PROFILEID_WIDENING )
+	{
+		DeleteAllStrategicEventsOfType( EVENT_REBELCOMMAND );
+	}
+
 	// anv: we need to rebuild ambient sounds now, as those added when loading tileset are removed
 	// in LoadStrategicEventsFromSavedGame
 	HandleNewSectorAmbience( gTilesets[ giCurrentTilesetID ].ubAmbientID );
